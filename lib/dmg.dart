@@ -8,10 +8,67 @@ import 'dart:io';
 import 'package:dmg/generate_setting.dart';
 
 /// no-doc
-String getSettingPath(String? setting, String? licensePath) {
+String getParentAppPath(String path) {
+  return (path.split('/')..removeLast()).join('/');
+}
+
+/// no-doc
+String getAppName(String path) {
+  final name = path.split('/').last;
+  return (name.split('.')..removeLast()).join('.');
+}
+
+/// no-doc
+void _codesign(
+  String signCertificate,
+  String filePath, {
+  bool isRuntime = true,
+  bool isDeep = false,
+}) {
+  Process.runSync('codesign', [
+    '--sign',
+    signCertificate,
+    filePath,
+    '--force',
+    '--timestamp',
+    if (isDeep) '--deep',
+    if (isRuntime) '--options=runtime',
+  ]);
+}
+
+/// Get path of .app file in the release path
+String getAppPath(String releasePath) {
+  final dir = Directory(releasePath);
+  for (final file in dir.listSync()) {
+    if (file.path.endsWith('.app')) {
+      return file.path;
+    }
+  }
+  return '';
+}
+
+/// Run Flutter release
+void runFlutterRelease() {
+  Process.runSync('flutter', [
+    'build',
+    'macos',
+    '--release',
+    '--obfuscate',
+    '--split-debug-info=./debug-info/',
+  ]);
+}
+
+/// no-doc
+void runCodeSignApp(String signCertificate, String appPath) {
+  _codesign(signCertificate, appPath, isDeep: true);
+}
+
+/// no-doc
+String getSettingPath(
+    String appParentPath, String? setting, String? licensePath) {
   if (setting != null) return setting;
 
-  final file = File('./.build_dmg_setting.py');
+  final file = File('$appParentPath/dmgbuild_setting.py');
   file.writeAsStringSync(generateSetting(licensePath));
   return file.path;
 }
@@ -23,9 +80,8 @@ void runDmgBuild(String setting, String app, String dmg, String volumeName) {
 }
 
 /// no-doc
-void runCodeSign(String dmg, String signCertificate) {
-  Process.runSync('codesign',
-      ['--sign', signCertificate, dmg, '--options=runtime', '--force']);
+void runCodeSignDmg(String dmg, String signCertificate) {
+  _codesign(signCertificate, dmg, isDeep: false);
 }
 
 /// no-doc
@@ -51,6 +107,7 @@ Future<bool> waitAndCheckNoratyState(
   do {
     await Future.delayed(const Duration(seconds: 30));
 
+    print('Checking for the notary result...');
     Process.runSync('xcrun', [
       'notarytool',
       'log',
@@ -61,6 +118,7 @@ Future<bool> waitAndCheckNoratyState(
     ]);
 
     if (!logFile.existsSync()) {
+      print('Still in processing. Waiting...');
       continue;
     }
 
@@ -68,7 +126,7 @@ Future<bool> waitAndCheckNoratyState(
     final decoded = jsonDecode(json);
     if (decoded['status'] == 'Accepted') {
       success = true;
-      print('Notarized.');
+      print('Notarized');
     } else {
       print('Notarize error with message: ${decoded['statusSummary']}');
       print('Look at ${logFile.path} for more details');
@@ -83,4 +141,12 @@ Future<bool> waitAndCheckNoratyState(
 /// no-doc
 void runStaple(String dmg) {
   Process.runSync('xcrun', ['stapler', 'staple', dmg]);
+}
+
+/// Delete build of macos
+void cleanBuild() {
+  final build = Directory('./build/macos');
+  if (!build.existsSync()) return;
+
+  build.deleteSync(recursive: true);
 }
