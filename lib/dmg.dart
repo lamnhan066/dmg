@@ -7,14 +7,22 @@ import 'dart:io';
 
 import 'package:dmg/generate_setting.dart';
 
+/// Path separator
+final separator = Platform.pathSeparator;
+
+/// join path
+String joinPaths(List<String> paths) {
+  return paths.join(separator);
+}
+
 /// no-doc
 String getParentAppPath(String path) {
-  return (path.split('/')..removeLast()).join('/');
+  return (path.split(separator)..removeLast()).join(separator);
 }
 
 /// no-doc
 String getAppName(String path) {
-  final name = path.split('/').last;
+  final name = path.split(separator).last;
   return (name.split('.')..removeLast()).join('.');
 }
 
@@ -54,7 +62,7 @@ void runFlutterRelease() {
     'macos',
     '--release',
     '--obfuscate',
-    '--split-debug-info=./debug-info/',
+    '--split-debug-info=${joinPaths(['.', 'build', 'debug-macos-info'])}',
   ]);
 }
 
@@ -68,7 +76,7 @@ String getSettingPath(
     String appParentPath, String? setting, String? licensePath) {
   if (setting != null) return setting;
 
-  final file = File('$appParentPath/dmgbuild_setting.py');
+  final file = File(joinPaths([appParentPath, 'dmgbuild_setting.py']));
   file.writeAsStringSync(generateSetting(licensePath));
   return file.path;
 }
@@ -145,7 +153,7 @@ void runStaple(String dmg) {
 
 /// Delete build of macos
 void cleanBuild() {
-  final build = Directory('./build/macos');
+  final build = Directory(joinPaths(['.', 'build', 'macos']));
   if (!build.existsSync()) return;
 
   build.deleteSync(recursive: true);

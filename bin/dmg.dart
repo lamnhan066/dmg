@@ -6,7 +6,8 @@ import 'package:args/args.dart';
 import 'package:dmg/dmg.dart';
 
 void main(List<String> args) async {
-  const releasePath = './build/macos/Build/Products/Release';
+  final releasePath =
+      joinPaths(['.', 'build', 'macos', 'Build', 'Products', 'Release']);
 
   final parser = ArgParser()
     ..addOption(
@@ -46,14 +47,14 @@ void main(List<String> args) async {
 
   final appPath = getAppPath(releasePath);
   if (appPath == '') {
-    print('Cannot get the app path from "build/macos/Build/Products/Release"');
+    print('Cannot get the app path from "$releasePath"');
     print('Exit');
     return;
   }
 
   final appParentPath = getParentAppPath(appPath);
   final appName = getAppName(appPath);
-  final dmg = '$appParentPath/$appName.dmg';
+  final dmg = '$appParentPath$separator$appName.dmg';
   final settingPath = getSettingPath(appParentPath, setting, licensePath);
 
   print('Code signing for the APP...');
@@ -75,8 +76,9 @@ void main(List<String> args) async {
   final match = regex.firstMatch(notaryOutput);
   final noratyId = match!.group(1) as String;
 
-  final dmgPath = (dmg.split('/')..removeLast()).join('/');
-  final notaryLogPath = '$dmgPath/notary_log.json';
+  final dmgPath = (dmg.split(separator)..removeLast()).join(separator);
+  final notaryLogPath = joinPaths([dmgPath, 'notary_log.json']);
+
   final logFile = File(notaryLogPath);
 
   final success = await waitAndCheckNoratyState(
@@ -91,9 +93,6 @@ void main(List<String> args) async {
     print('Stapling...');
     runStaple(dmg);
     print('Stapled');
-  }
-
-  if (success) {
     print('Done everything. Output: $dmg');
   } else {
     print('Done with error.');
