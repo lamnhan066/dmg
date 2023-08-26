@@ -2,43 +2,17 @@
 
 A Flutter package helps you to create, sign, notarize and staple a .DMG with a single command.
 
-## Demo terminal output
-
-``` terminal
-dart run dmg --sign-certificate "Developer ID Application: <Your  Company>"
-Building package executable... 
-Built dmg:dmg.
-Cleaning build...
-Cleaned
-Flutter release...
-Released
-Code signing for the APP...
-Signed
-Building DMG...
-Built
-Code signing for the DMG...
-Signed
-Notarizing...
-Checking for the notary result...
-Still in processing. Waiting...
-Checking for the notary result...
-Notarized
-Stapling...
-Stapled
-Done everything. Output: ./build/macos/Build/Products/Release/<Name>.dmg
-```
-
 ## Required
 
 All this steps are needed for only the first app, you can reuse this setting in other apps.
 
-### Install `dmgbuild` if you don't have
+### Install `dmgbuild` if you don't have ([document](https://dmgbuild.readthedocs.io/en/latest/))
 
 ``` shell
 pip install dmgbuild
 ```
 
-### Create a `NotaryProfile` certificate
+### Create a `NotaryProfile`
 
 **1:** Go to [Appstoreconnect -> Users and Access -> Keys](https://appstoreconnect.apple.com/access/api)
 
@@ -57,6 +31,12 @@ pip install dmgbuild
 **3:** Tap `Manage Certificates...` -> Tap (+) -> Choose `Developer ID Application` -> Done.
 
 ## Usage
+
+Add this package to your dev dependency:
+
+``` shell
+flutter pub add --dev dmg
+```
 
 Open a terminal on your current project then run:
 
@@ -82,7 +62,7 @@ You can also add your own `setting.py` of [dmg-build](https://dmgbuild.readthedo
 --setting "./path/to/setting.py"
 ```
 
-Note that the `--license-path` will not affect when you use your own `setting.py`.
+Note that the `--license-path` will be ignored when you use your own `setting.py`.
 
 Your output `DMG` is expected at: `build/macos/Build/Products/Release/<name>.dmg`.
 
