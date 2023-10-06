@@ -93,7 +93,7 @@ void main(List<String> args) async {
     print('Stapling...');
     runStaple(dmg);
     print('Stapled');
-    print('Done everything. Output: $dmg');
+    print('Everything is done. Output: $dmg');
   } else {
     print('Done with error.');
   }
