@@ -3,9 +3,20 @@
 
 A Flutter package that helps you create, sign, notarize, and staple a .DMG with a single command.
 
+# Features
+
+- Easy to use: Streamline the entire process with one command.
+- Security: Ensures your .DMG files are signed and notarized as per Apple's requirements.
+
 ## Requirements
 
 All these steps are needed only for the first app. You can reuse these settings in other apps.
+
+### Before installation, ensure you have the following
+
+- Python (version 3.x or later)
+- Flutter
+- Xcode (for macOS)
 
 ### Install `dmgbuild` if you haven't ([documentation](https://dmgbuild.readthedocs.io/en/latest/))
 
@@ -44,6 +55,8 @@ Open a terminal in your current project, then run:
 ```shell
 dart run dmg --sign-certificate "Developer ID Application: Your Company"
 ```
+
+Sometimes, it is necessary to add two spaces between the words "Your" and "Company" like "Your  Company".
 
 Change the notary profile name if you haven't used the default by adding:
 
