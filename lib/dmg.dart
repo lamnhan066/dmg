@@ -5,7 +5,7 @@ library dmg;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dmg/generate_setting.dart';
+import 'package:dmg/generate_settings.dart';
 
 /// Path separator
 final separator = Platform.pathSeparator;
@@ -73,8 +73,8 @@ void runCodeSignApp(String signCertificate, String appPath) {
 
 /// no-doc
 String getSettingsPath(
-    String appParentPath, String? setting, String? licensePath) {
-  if (setting != null) return setting;
+    String appParentPath, String? settings, String? licensePath) {
+  if (settings != null) return settings;
 
   final file = File(joinPaths([appParentPath, 'dmgbuild_settings.py']));
   file.writeAsStringSync(generateSettings(licensePath));
@@ -82,9 +82,9 @@ String getSettingsPath(
 }
 
 /// no-doc
-void runDmgBuild(String setting, String app, String dmg, String volumeName) {
+void runDmgBuild(String settings, String app, String dmg, String volumeName) {
   Process.runSync(
-      'dmgbuild', ['-s', setting, '-D', 'app=$app', volumeName, dmg]);
+      'dmgbuild', ['-s', settings, '-D', 'app=$app', volumeName, dmg]);
 }
 
 /// no-doc
