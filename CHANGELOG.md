@@ -1,3 +1,8 @@
+## 0.1.0
+
+* Renamed the parameter `setting` to `settings` for consistency.
+* Update README.
+
 ## 0.0.5
 
 * Update homepage URL.
