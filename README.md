@@ -1,71 +1,72 @@
+
 # DMG
 
-A Flutter package helps you to create, sign, notarize and staple a .DMG with a single command.
+A Flutter package that helps you create, sign, notarize, and staple a .DMG with a single command.
 
-## Required
+## Requirements
 
-All this steps are needed for only the first app, you can reuse this setting in other apps.
+All these steps are needed only for the first app. You can reuse these settings in other apps.
 
-### Install `dmgbuild` if you don't have ([document](https://dmgbuild.readthedocs.io/en/latest/))
+### Install `dmgbuild` if you haven't ([documentation](https://dmgbuild.readthedocs.io/en/latest/))
 
-``` shell
+```shell
 pip install dmgbuild
 ```
 
 ### Create a `NotaryProfile`
 
-**1:** Go to [Appstoreconnect -> Users and Access -> Keys](https://appstoreconnect.apple.com/access/api)
+**1.** Go to [App Store Connect -> Users and Access -> Keys](https://appstoreconnect.apple.com/access/api).
 
-**2:** Tap (+) to generate a new API key, input a Name (normally use `NotaryProfile`) and Access (noramally use `Admin`).
+**2.** Click (+) to generate a new API key, input a Name (normally use `NotaryProfile`) and Access (normally use `Admin`).
 
-**3:** Download the generated file and save somewhere secure, also note the `Issuer ID` and `KEY ID`.
+**3.** Download the generated file and save it somewhere secure. Also, note the `Issuer ID` and `Key ID`.
 
-**4:** Open terminal and run `xcrun notarytool store-credentials` and input all the above data, you should input the name as `NotaryProfile`.
+**4.** Open the terminal and run `xcrun notarytool store-credentials`. Input all the above data, ensuring the name is input as `NotaryProfile`.
 
-### Create a `Developer ID Application` certificate if you don't have
+### Create a `Developer ID Application` certificate if you don't have one
 
-**1:** Open Xcode.
+**1.** Open Xcode.
 
-**2:** Go to `XCode` -> `Settings` -> `Account`.
+**2.** Go to `Xcode` -> `Preferences` -> `Accounts`.
 
-**3:** Tap `Manage Certificates...` -> Tap (+) -> Choose `Developer ID Application` -> Done.
+**3.** Click `Manage Certificates...` -> Click (+) -> Choose `Developer ID Application` -> Click `Done`.
 
 ## Usage
 
-Add this package to your dev dependency:
+Add this package to your development dependency:
 
-``` shell
+```shell
 flutter pub add --dev dmg
 ```
 
-Open a terminal on your current project then run:
+Open a terminal in your current project, then run:
 
-``` shell
-dart run dmg --sign-certificate "Developer ID Application: Your  Company"
+```shell
+dart run dmg --sign-certificate "Developer ID Application: Your Company"
 ```
 
-Change the notary profile name if you don't use the default by adding:
+Change the notary profile name if you haven't used the default by adding:
 
-``` shell
+```shell
 --notary-profile "NotaryProfile"
 ```
 
-If you want to add a license (a window will shows up to ask for the acceptance before showing the installation for the .dmg), add this line to the above code:
+If you want to add a license (a window will show up asking for acceptance before showing the installation for the .dmg), add this line to the above code:
 
-``` shell
+```shell
 --license-path "./path/to/license.txt"
 ```
 
-You can also add your own `setting.py` of [dmg-build](https://dmgbuild.readthedocs.io/en/latest/settings.html) by adding:
+You can also add your own `settings.py` from [dmg-build](https://dmgbuild.readthedocs.io/en/latest/settings.html) by adding:
 
-``` shell
---setting "./path/to/setting.py"
+```shell
+--settings "./path/to/settings.py"
 ```
 
-Note that the `--license-path` will be ignored when you use your own `setting.py`.
+Note that the `--license-path` will be ignored when you use your own `settings.py`.
 
-Your output `DMG` is expected at: `build/macos/Build/Products/Release/<name>.dmg`.
+Your output `DMG` is expected at `build/macos/Build/Products/Release/<name>.dmg`.
 
 ## Contributions
 
-This package still in the early stages, file an issue if you have one and PR is welcome.
+This package is still in the early stages. File an issue if you have one, and PRs are welcome.
