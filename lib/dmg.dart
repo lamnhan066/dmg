@@ -72,12 +72,12 @@ void runCodeSignApp(String signCertificate, String appPath) {
 }
 
 /// no-doc
-String getSettingPath(
+String getSettingsPath(
     String appParentPath, String? setting, String? licensePath) {
   if (setting != null) return setting;
 
-  final file = File(joinPaths([appParentPath, 'dmgbuild_setting.py']));
-  file.writeAsStringSync(generateSetting(licensePath));
+  final file = File(joinPaths([appParentPath, 'dmgbuild_settings.py']));
+  file.writeAsStringSync(generateSettings(licensePath));
   return file.path;
 }
 

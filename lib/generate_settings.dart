@@ -1,4 +1,4 @@
-String generateSetting(String? licensePath) {
+String generateSettings(String? licensePath) {
   String licenese = '';
   if (licensePath != null) {
     licenese = '''

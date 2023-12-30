@@ -16,9 +16,9 @@ void main(List<String> args) async {
           'The certificate that you are signed. Ex: `Developer ID Application: Your Company`',
     )
     ..addOption(
-      'setting',
+      'settings',
       help:
-          'Path of the modified `setting.py` file. Use default setting if not provided',
+          'Path of the modified `settings.py` file. Use default setting if not provided',
     )
     ..addOption(
       'license-path',
@@ -32,7 +32,7 @@ void main(List<String> args) async {
     );
   final param = parser.parse(args);
 
-  final setting = param['setting'] as String?;
+  final settings = param['settings'] as String?;
   final licensePath = param['license-path'] as String?;
   final signCertificate = param['sign-certificate'] as String;
   final notaryProfile = param['notary-profile'] as String;
@@ -55,14 +55,14 @@ void main(List<String> args) async {
   final appParentPath = getParentAppPath(appPath);
   final appName = getAppName(appPath);
   final dmg = '$appParentPath$separator$appName.dmg';
-  final settingPath = getSettingPath(appParentPath, setting, licensePath);
+  final settingsPath = getSettingsPath(appParentPath, settings, licensePath);
 
   print('Code signing for the APP...');
   runCodeSignApp(signCertificate, appPath);
   print('Signed');
 
   print('Building DMG...');
-  runDmgBuild(settingPath, appPath, dmg, appName);
+  runDmgBuild(settingsPath, appPath, dmg, appName);
   print('Built');
 
   print('Code signing for the DMG...');
