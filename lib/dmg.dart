@@ -32,8 +32,9 @@ void _codesign(
   String filePath, {
   bool isRuntime = true,
   bool isDeep = false,
+  bool isVerbose = false,
 }) {
-  Process.runSync('codesign', [
+  final r = Process.runSync('codesign', [
     '--sign',
     signCertificate,
     filePath,
@@ -42,6 +43,9 @@ void _codesign(
     if (isDeep) '--deep',
     if (isRuntime) '--options=runtime',
   ]);
+  if (isVerbose) {
+    print(r.stdout);
+  }
 }
 
 /// Get path of .app file in the release path
@@ -56,19 +60,22 @@ String getAppPath(String releasePath) {
 }
 
 /// Run Flutter release
-void runFlutterRelease() {
-  Process.runSync('flutter', [
+void runFlutterRelease(bool isVerbose) {
+  final r = Process.runSync('flutter', [
     'build',
     'macos',
     '--release',
     '--obfuscate',
     '--split-debug-info=${joinPaths(['.', 'build', 'debug-macos-info'])}',
   ]);
+  if (isVerbose) {
+    print(r.stdout);
+  }
 }
 
 /// no-doc
-void runCodeSignApp(String signCertificate, String appPath) {
-  _codesign(signCertificate, appPath, isDeep: true);
+void runCodeSignApp(String signCertificate, String appPath, bool isVerbose) {
+  _codesign(signCertificate, appPath, isDeep: true, isVerbose: isVerbose);
 }
 
 /// no-doc
@@ -82,25 +89,33 @@ String getSettingsPath(
 }
 
 /// no-doc
-void runDmgBuild(String settings, String app, String dmg, String volumeName) {
-  Process.runSync(
+void runDmgBuild(String settings, String app, String dmg, String volumeName,
+    bool isVerbose) {
+  final r = Process.runSync(
       'dmgbuild', ['-s', settings, '-D', 'app=$app', volumeName, dmg]);
+  if (isVerbose) {
+    print(r.stdout);
+  }
 }
 
 /// no-doc
-void runCodeSignDmg(String dmg, String signCertificate) {
-  _codesign(signCertificate, dmg, isDeep: false);
+void runCodeSignDmg(String dmg, String signCertificate, bool isVerbose) {
+  _codesign(signCertificate, dmg, isDeep: false, isVerbose: isVerbose);
 }
 
 /// no-doc
-String runNotaryTool(String dmg) {
-  return Process.runSync('xcrun', [
+String runNotaryTool(String dmg, bool isVerbose) {
+  final o = Process.runSync('xcrun', [
     'notarytool',
     'submit',
     dmg,
     '--keychain-profile',
     'NotaryProfile',
   ]).stdout;
+  if (isVerbose) {
+    print(o);
+  }
+  return o;
 }
 
 /// no-doc
@@ -110,6 +125,7 @@ Future<bool> waitAndCheckNoratyState(
   String notaryProfile,
   String noratyId,
   File logFile,
+  bool isVerbose,
 ) async {
   bool success = false;
   do {
@@ -131,6 +147,11 @@ Future<bool> waitAndCheckNoratyState(
     }
 
     final json = logFile.readAsStringSync();
+
+    if (isVerbose) {
+      print(json);
+    }
+
     final decoded = jsonDecode(json);
     if (decoded['status'] == 'Accepted') {
       success = true;
@@ -147,12 +168,15 @@ Future<bool> waitAndCheckNoratyState(
 }
 
 /// no-doc
-void runStaple(String dmg) {
-  Process.runSync('xcrun', ['stapler', 'staple', dmg]);
+void runStaple(String dmg, bool isVerbose) {
+  final r = Process.runSync('xcrun', ['stapler', 'staple', dmg]);
+  if (isVerbose) {
+    print(r.stdout);
+  }
 }
 
 /// Delete build of macos
-void cleanBuild() {
+void cleanBuild(bool isVerbose) {
   final build = Directory(joinPaths(['.', 'build', 'macos']));
   if (!build.existsSync()) return;
 

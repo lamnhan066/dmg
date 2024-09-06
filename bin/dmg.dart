@@ -29,6 +29,13 @@ void main(List<String> args) async {
       help:
           'Name of the notary profile that created by `xcrun notarytool store-credentials`.',
       defaultsTo: "NotaryProfile",
+    )
+    ..addFlag(
+      'verbose',
+      abbr: 'v',
+      help:
+          'Name of the notary profile that created by `xcrun notarytool store-credentials`.',
+      defaultsTo: false,
     );
   final param = parser.parse(args);
 
@@ -36,13 +43,14 @@ void main(List<String> args) async {
   final licensePath = param['license-path'] as String?;
   final signCertificate = param['sign-certificate'] as String;
   final notaryProfile = param['notary-profile'] as String;
+  final isVerbose = param['verbose'] as bool;
 
   print('Cleaning build...');
-  cleanBuild();
+  cleanBuild(isVerbose);
   print('Cleaned');
 
   print('Flutter release...');
-  runFlutterRelease();
+  runFlutterRelease(isVerbose);
   print('Released');
 
   final appPath = getAppPath(releasePath);
@@ -58,19 +66,19 @@ void main(List<String> args) async {
   final settingsPath = getSettingsPath(appParentPath, settings, licensePath);
 
   print('Code signing for the APP...');
-  runCodeSignApp(signCertificate, appPath);
+  runCodeSignApp(signCertificate, appPath, isVerbose);
   print('Signed');
 
   print('Building DMG...');
-  runDmgBuild(settingsPath, appPath, dmg, appName);
+  runDmgBuild(settingsPath, appPath, dmg, appName, isVerbose);
   print('Built');
 
   print('Code signing for the DMG...');
-  runCodeSignDmg(dmg, signCertificate);
+  runCodeSignDmg(dmg, signCertificate, isVerbose);
   print('Signed');
 
   print('Notarizing...');
-  final notaryOutput = runNotaryTool(dmg);
+  final notaryOutput = runNotaryTool(dmg, isVerbose);
 
   final regex = RegExp(r'id: (\w+-\w+-\w+-\w+-\w+)');
   final match = regex.firstMatch(notaryOutput);
@@ -87,11 +95,12 @@ void main(List<String> args) async {
     notaryProfile,
     noratyId,
     logFile,
+    isVerbose,
   );
 
   if (success) {
     print('Stapling...');
-    runStaple(dmg);
+    runStaple(dmg, isVerbose);
     print('Stapled');
     print('Everything is done. Output: $dmg');
   } else {
