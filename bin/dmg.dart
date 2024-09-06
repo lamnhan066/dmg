@@ -82,10 +82,25 @@ void main(List<String> args) async {
 
   final regex = RegExp(r'id: (\w+-\w+-\w+-\w+-\w+)');
   final match = regex.firstMatch(notaryOutput);
-  final noratyId = match!.group(1) as String;
+  if (match == null) {
+    print('The `id` not found from notary output:');
+    print(notaryOutput);
+    return;
+  }
+
+  final noratyId = match.group(1);
+  if (noratyId == null) {
+    print('The matched `id` not found from notary output:');
+    print(notaryOutput);
+    return;
+  }
 
   final dmgPath = (dmg.split(separator)..removeLast()).join(separator);
   final notaryLogPath = joinPaths([dmgPath, 'notary_log.json']);
+
+  if (isVerbose) {
+    print('Notary log path: $notaryLogPath');
+  }
 
   final logFile = File(notaryLogPath);
 
