@@ -4,7 +4,6 @@ version: 0.1.0
 homepage: https://github.com/lamnhan066/dmg
 topics:
   - macos
-  - tool
   - dmg
   - sign
   - notarize
@@ -18,7 +17,7 @@ dependencies:
 
 dev_dependencies:
   test: ^1.25.0
-  flutter_lints: ^3.0.1
+  flutter_lints: ^5.0.0
 
 platforms:
   macos:

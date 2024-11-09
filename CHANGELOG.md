@@ -1,6 +1,7 @@
 ## 0.1.0
 
 * Renamed the parameter `setting` to `settings` for consistency.
+* Add the `verbose` flag to print more useful logs.
 * Update README.
 
 ## 0.0.5
