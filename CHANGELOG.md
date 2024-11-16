@@ -1,3 +1,8 @@
+## 0.1.1
+
+* Add `help` flag to show helps.
+* Update helps.
+
 ## 0.1.0
 
 * Renamed the parameter `setting` to `settings` for consistency.
