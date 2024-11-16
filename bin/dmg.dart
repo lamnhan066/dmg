@@ -18,26 +18,38 @@ void main(List<String> args) async {
     ..addOption(
       'settings',
       help:
-          'Path of the modified `settings.py` file. Use default setting if not provided',
+          'Path of the modified `settings.py` file. Use default setting if not provided. Read more on https://dmgbuild.readthedocs.io/en/latest/settings.html',
     )
     ..addOption(
       'license-path',
-      help: 'Path of the license file.',
+      help: 'Path of the license file',
     )
     ..addOption(
       'notary-profile',
       help:
-          'Name of the notary profile that created by `xcrun notarytool store-credentials`.',
+          'Name of the notary profile that created by `xcrun notarytool store-credentials`',
       defaultsTo: "NotaryProfile",
     )
     ..addFlag(
       'verbose',
       abbr: 'v',
-      help:
-          'Name of the notary profile that created by `xcrun notarytool store-credentials`.',
+      negatable: false,
+      help: 'Show verbose logs',
+      defaultsTo: false,
+    )
+    ..addFlag(
+      'help',
+      abbr: 'h',
+      negatable: false,
+      help: 'Show helps',
       defaultsTo: false,
     );
   final param = parser.parse(args);
+
+  if (param['help'] ?? false) {
+    print(parser.usage);
+    return;
+  }
 
   final settings = param['settings'] as String?;
   final licensePath = param['license-path'] as String?;
