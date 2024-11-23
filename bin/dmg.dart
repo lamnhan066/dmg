@@ -31,6 +31,12 @@ void main(List<String> args) async {
       defaultsTo: "NotaryProfile",
     )
     ..addFlag(
+      'build',
+      help:
+          'Automatically run `flutter build macos --release --obfuscate --split-debug-info=debug-macos-info`.',
+      defaultsTo: true,
+    )
+    ..addFlag(
       'verbose',
       abbr: 'v',
       negatable: false,
@@ -55,19 +61,24 @@ void main(List<String> args) async {
   final licensePath = param['license-path'] as String?;
   final signCertificate = param['sign-certificate'] as String;
   final notaryProfile = param['notary-profile'] as String;
+  final runBuild = param['build'] as bool;
   final isVerbose = param['verbose'] as bool;
 
-  print('Cleaning build...');
-  cleanBuild(isVerbose);
-  print('Cleaned');
+  if (runBuild) {
+    print('Cleaning build...');
+    cleanBuild(isVerbose);
+    print('Cleaned');
 
-  print('Flutter release...');
-  runFlutterRelease(isVerbose);
-  print('Released');
+    print('Flutter release...');
+    runFlutterRelease(isVerbose);
+    print('Released');
+  }
 
   final appPath = getAppPath(releasePath);
   if (appPath == '') {
     print('Cannot get the app path from "$releasePath"');
+    print(
+        'Please run `flutter build macos --release` first or add a flag `--build` to the command.');
     print('Exit');
     return;
   }
