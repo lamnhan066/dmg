@@ -51,6 +51,8 @@ void _codesign(
 /// Get path of .app file in the release path
 String getAppPath(String releasePath) {
   final dir = Directory(releasePath);
+  if (!dir.existsSync()) return '';
+
   for (final file in dir.listSync()) {
     if (file.path.endsWith('.app')) {
       return file.path;
