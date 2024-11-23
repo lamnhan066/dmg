@@ -1,3 +1,7 @@
+## 0.1.2
+
+* Add `--buid` and `--no-build` flags to enable/disable running `flutter build macos`, so you can run it yourself.
+
 ## 0.1.1
 
 * Add `help` flag to show helps.
