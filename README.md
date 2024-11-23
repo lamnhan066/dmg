@@ -58,6 +58,12 @@ dart run dmg --sign-certificate "Developer ID Application: Your Company"
 
 Sometimes, it is necessary to add two spaces between the words "Your" and "Company" like "Your  Company".
 
+The package will automatically run `flutter build macos --release --obfuscate --split-debug-info=debug-macos-info`. If you want to do it yourself, you can pass this flag to the command:
+
+```shell
+--no-build
+```
+
 Change the notary profile name if you haven't used the default by adding:
 
 ```shell
