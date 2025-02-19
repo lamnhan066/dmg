@@ -15,7 +15,7 @@ bool runFlutterRelease(bool isVerbose, String releasePath) {
   final appPath = getAppPath(releasePath);
 
   if (appPath == '' || isVerbose) {
-    print(r.stdout);
+    log.info(r.stdout);
   }
 
   return appPath.isNotEmpty;

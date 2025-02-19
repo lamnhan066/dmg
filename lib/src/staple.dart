@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:dmg/src/utils.dart';
+
 /// no-doc
 void runStaple(String dmg, bool isVerbose) {
   final r = Process.runSync('xcrun', ['stapler', 'staple', dmg]);
   if (isVerbose) {
-    print(r.stdout);
+    log.info(r.stdout);
   }
 }

@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 library dmg;
 
 import 'dart:io';
@@ -60,7 +58,7 @@ Future<void> execute(List<String> args) async {
   final param = parser.parse(args);
 
   if (param['help'] ?? false) {
-    print(parser.usage);
+    log.info(parser.usage);
     return;
   }
 
@@ -72,26 +70,26 @@ Future<void> execute(List<String> args) async {
   final isVerbose = param['verbose'] as bool;
 
   if (runBuild) {
-    print('Cleaning build...');
+    log.info('Cleaning build...');
     cleanBuild(isVerbose);
-    print('Cleaned');
+    log.info('Cleaned');
 
-    print('Flutter release...');
+    log.info('Flutter release...');
     if (!runFlutterRelease(isVerbose, releasePath)) {
-      print(
+      log.warning(
           'Error: `flutter build macos --release` failed. Please check your project settings and logs for further details.');
-      print('Exit');
+      log.warning('Exit');
       return;
     }
-    print('Released');
+    log.info('Released');
   }
 
   final appPath = getAppPath(releasePath);
   if (appPath == '') {
-    print('Cannot get the app path from "$releasePath"');
-    print(
+    log.warning('Cannot get the app path from "$releasePath"');
+    log.warning(
         'Please run `flutter build macos --release` first or add a flag `--build` to the command.');
-    print('Exit');
+    log.warning('Exit');
     return;
   }
 
@@ -102,35 +100,35 @@ Future<void> execute(List<String> args) async {
 
   signCertificate ??= getSignCertificate(signCertificate);
 
-  print('Using signing identity: $signCertificate');
+  log.info('Using signing identity: $signCertificate');
 
-  print('Code signing for the APP...');
+  log.info('Code signing for the APP...');
   runCodeSignApp(signCertificate, appPath, isVerbose);
-  print('Signed');
+  log.info('Signed');
 
-  print('Building DMG...');
+  log.info('Building DMG...');
   runDmgBuild(settingsPath, appPath, dmg, appName, isVerbose);
-  print('Built');
+  log.info('Built');
 
-  print('Code signing for the DMG...');
+  log.info('Code signing for the DMG...');
   runCodeSignDmg(dmg, signCertificate, isVerbose);
-  print('Signed');
+  log.info('Signed');
 
-  print('Notarizing...');
+  log.info('Notarizing...');
   final notaryOutput = runNotaryTool(dmg, notaryProfile, isVerbose);
 
   final regex = RegExp(r'id: (\w+-\w+-\w+-\w+-\w+)');
   final match = regex.firstMatch(notaryOutput);
   if (match == null) {
-    print('The `id` not found from notary output:');
-    print(notaryOutput);
+    log.warning('The `id` not found from notary output:');
+    log.warning(notaryOutput);
     return;
   }
 
   final noratyId = match.group(1);
   if (noratyId == null) {
-    print('The matched `id` not found from notary output:');
-    print(notaryOutput);
+    log.warning('The matched `id` not found from notary output:');
+    log.warning(notaryOutput);
     return;
   }
 
@@ -138,7 +136,7 @@ Future<void> execute(List<String> args) async {
   final notaryLogPath = joinPaths([dmgPath, 'notary_log.json']);
 
   if (isVerbose) {
-    print('Notary log path: $notaryLogPath');
+    log.info('Notary log path: $notaryLogPath');
   }
 
   final logFile = File(notaryLogPath);
@@ -153,11 +151,11 @@ Future<void> execute(List<String> args) async {
   );
 
   if (success) {
-    print('Stapling...');
+    log.info('Stapling...');
     runStaple(dmg, isVerbose);
-    print('Stapled');
-    print('Everything is done. Output: $dmg');
+    log.info('Stapled');
+    log.info('Everything is done. Output: $dmg');
   } else {
-    print('Done with error.');
+    log.warning('Done with error.');
   }
 }

@@ -1,6 +1,9 @@
 import 'dart:io';
 
 import 'package:dmg/generate_settings.dart';
+import 'package:logging/logging.dart';
+
+final log = Logger.root..level = Level.ALL;
 
 /// Path separator
 final separator = Platform.pathSeparator;

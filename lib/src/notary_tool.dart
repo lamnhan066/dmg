@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dmg/src/utils.dart';
+
 /// no-doc
 String runNotaryTool(String dmg, String notaryProfile, bool isVerbose) {
-  print('Using notary profile: $notaryProfile');
+  log.info('Using notary profile: $notaryProfile');
 
   final result = Process.runSync('xcrun', [
     'notarytool',
@@ -16,7 +18,7 @@ String runNotaryTool(String dmg, String notaryProfile, bool isVerbose) {
   final output = result.stdout as String;
 
   if (isVerbose) {
-    print(output);
+    log.info(output);
   }
 
   return output;
@@ -35,7 +37,7 @@ Future<bool> waitAndCheckNoratyState(
   do {
     await Future.delayed(const Duration(seconds: 30));
 
-    print('Checking for the notary result...');
+    log.info('Checking for the notary result...');
     Process.runSync('xcrun', [
       'notarytool',
       'log',
@@ -46,23 +48,23 @@ Future<bool> waitAndCheckNoratyState(
     ]);
 
     if (!logFile.existsSync()) {
-      print('Still in processing. Waiting...');
+      log.info('Still in processing. Waiting...');
       continue;
     }
 
     final json = logFile.readAsStringSync();
 
     if (isVerbose) {
-      print(json);
+      log.info(json);
     }
 
     final decoded = jsonDecode(json);
     if (decoded['status'] == 'Accepted') {
       success = true;
-      print('Notarized');
+      log.info('Notarized');
     } else {
-      print('Notarize error with message: ${decoded['statusSummary']}');
-      print('Look at ${logFile.path} for more details');
+      log.warning('Notarize error with message: ${decoded['statusSummary']}');
+      log.warning('Look at ${logFile.path} for more details');
     }
 
     break;

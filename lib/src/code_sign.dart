@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:dmg/src/utils.dart';
+
 /// no-doc
 void runCodeSignApp(String signCertificate, String appPath, bool isVerbose) {
   _codesign(signCertificate, appPath, isDeep: true, isVerbose: isVerbose);
@@ -26,21 +28,21 @@ String getSignCertificate(String? signCertificate) {
         matches.map((m) => m.group(0)?.replaceAll('"', '') ?? '').toList();
 
     if (certificates.isEmpty) {
-      print('Error: No Developer ID certificate found.');
+      log.warning('Error: No Developer ID certificate found.');
       exit(1);
     } else if (certificates.length == 1) {
       signCertificate = certificates.first;
     } else {
-      print('Multiple Developer ID certificates found:');
+      log.info('Multiple Developer ID certificates found:');
       for (var i = 0; i < certificates.length; i++) {
-        print('${i + 1}: ${certificates[i]}');
+        log.info('${i + 1}: ${certificates[i]}');
       }
       stdout.write('Select a certificate (1-${certificates.length}): ');
       final selection = int.tryParse(stdin.readLineSync() ?? '');
       if (selection == null ||
           selection < 1 ||
           selection > certificates.length) {
-        print('Invalid selection.');
+        log.warning('Invalid selection.');
         exit(1);
       }
       signCertificate = certificates[selection - 1];
@@ -78,13 +80,13 @@ void _codesign(
 
   // Check the result
   if (r.exitCode == 0) {
-    print('Code signing successful!');
+    log.info('Code signing successful!');
   } else {
-    print('Code signing failed: ${r.stderr}');
+    log.warning('Code signing failed: ${r.stderr}');
     exit(1);
   }
 
   if (isVerbose) {
-    print(r.stdout);
+    log.info(r.stdout);
   }
 }
