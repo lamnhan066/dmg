@@ -53,7 +53,13 @@ flutter pub add --dev dmg
 Open a terminal in your current project, then run:
 
 ```shell
-dart run dmg --sign-certificate "Developer ID Application: Your Company"
+dart run dmg
+```
+
+This package will automatically retrieve Developer ID certificate for code signing. If multiple valid certificates are available, a list of options will be displayed, and you have to select one. If you want to set it yourself, you can add this option:
+
+```shell
+--sign-certificate "Developer ID Application: Your Company"
 ```
 
 Sometimes, it is necessary to add two spaces between the words "Your" and "Company" like "Your  Company".
