@@ -1,3 +1,8 @@
+## 0.1.3-rc
+
+* Add `--strict` and `--entitlements=macos/Runner/Release.entitlements` to codesign process ([see more](https://github.com/juliansteenbakker/flutter_secure_storage/issues/804#issuecomment-2650518260)).
+* Automatically retrieve Developer ID certificate for code signing (Only for `Developer ID Application` certificate).
+
 ## 0.1.2
 
 * Add `--buid` and `--no-build` flags to enable/disable running `flutter build macos`, so you can run it yourself.
