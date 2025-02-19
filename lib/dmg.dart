@@ -2,185 +2,162 @@
 
 library dmg;
 
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:dmg/generate_settings.dart';
+import 'package:args/args.dart';
+import 'package:dmg/src/code_sign.dart';
+import 'package:dmg/src/dmg_build.dart';
+import 'package:dmg/src/flutter_release.dart';
+import 'package:dmg/src/notary_tool.dart';
+import 'package:dmg/src/staple.dart';
+import 'package:dmg/src/utils.dart';
 
-/// Path separator
-final separator = Platform.pathSeparator;
+Future<void> execute(List<String> args) async {
+  final releasePath =
+      joinPaths(['.', 'build', 'macos', 'Build', 'Products', 'Release']);
 
-/// join path
-String joinPaths(List<String> paths) {
-  return paths.join(separator);
-}
+  final parser = ArgParser()
+    ..addOption(
+      'sign-certificate',
+      help:
+          'The certificate that you are signed. Ex: `Developer ID Application: Your Company`',
+    )
+    ..addOption(
+      'settings',
+      help:
+          'Path of the modified `settings.py` file. Use default setting if not provided. Read more on https://dmgbuild.readthedocs.io/en/latest/settings.html',
+    )
+    ..addOption(
+      'license-path',
+      help: 'Path of the license file',
+    )
+    ..addOption(
+      'notary-profile',
+      defaultsTo: 'NotaryProfile',
+      help:
+          'Name of the notary profile that created by `xcrun notarytool store-credentials`',
+    )
+    ..addFlag(
+      'build',
+      help:
+          'Automatically run `flutter build macos --release --obfuscate --split-debug-info=debug-macos-info`.',
+      defaultsTo: true,
+    )
+    ..addFlag(
+      'verbose',
+      abbr: 'v',
+      negatable: false,
+      help: 'Show verbose logs',
+      defaultsTo: false,
+    )
+    ..addFlag(
+      'help',
+      abbr: 'h',
+      negatable: false,
+      help: 'Show helps',
+      defaultsTo: false,
+    );
+  final param = parser.parse(args);
 
-/// no-doc
-String getParentAppPath(String path) {
-  return (path.split(separator)..removeLast()).join(separator);
-}
-
-/// no-doc
-String getAppName(String path) {
-  final name = path.split(separator).last;
-  return (name.split('.')..removeLast()).join('.');
-}
-
-/// no-doc
-void _codesign(
-  String signCertificate,
-  String filePath, {
-  bool isRuntime = true,
-  bool isDeep = false,
-  bool isVerbose = false,
-}) {
-  final r = Process.runSync('codesign', [
-    '--sign',
-    signCertificate,
-    filePath,
-    '--force',
-    '--timestamp',
-    if (isDeep) '--deep',
-    if (isRuntime) '--options=runtime',
-  ]);
-  if (isVerbose) {
-    print(r.stdout);
+  if (param['help'] ?? false) {
+    print(parser.usage);
+    return;
   }
-}
 
-/// Get path of .app file in the release path
-String getAppPath(String releasePath) {
-  final dir = Directory(releasePath);
-  if (!dir.existsSync()) return '';
+  final settings = param['settings'] as String?;
+  final licensePath = param['license-path'] as String?;
+  var signCertificate = param['sign-certificate'] as String?;
+  var notaryProfile = param['notary-profile'] as String;
+  final runBuild = param['build'] as bool;
+  final isVerbose = param['verbose'] as bool;
 
-  for (final file in dir.listSync()) {
-    if (file.path.endsWith('.app')) {
-      return file.path;
+  if (runBuild) {
+    print('Cleaning build...');
+    cleanBuild(isVerbose);
+    print('Cleaned');
+
+    print('Flutter release...');
+    if (!runFlutterRelease(isVerbose, releasePath)) {
+      print(
+          'Error: `flutter build macos --release` failed. Please check your project settings and logs for further details.');
+      print('Exit');
+      return;
     }
+    print('Released');
   }
-  return '';
-}
 
-/// Run Flutter release
-void runFlutterRelease(bool isVerbose) {
-  final r = Process.runSync('flutter', [
-    'build',
-    'macos',
-    '--release',
-    '--obfuscate',
-    '--split-debug-info=${joinPaths(['.', 'build', 'debug-macos-info'])}',
-  ]);
+  final appPath = getAppPath(releasePath);
+  if (appPath == '') {
+    print('Cannot get the app path from "$releasePath"');
+    print(
+        'Please run `flutter build macos --release` first or add a flag `--build` to the command.');
+    print('Exit');
+    return;
+  }
+
+  final appParentPath = getParentAppPath(appPath);
+  final appName = getAppName(appPath);
+  final dmg = '$appParentPath$separator$appName.dmg';
+  final settingsPath = getSettingsPath(appParentPath, settings, licensePath);
+
+  signCertificate ??= getSignCertificate(signCertificate);
+
+  print('Using signing identity: $signCertificate');
+
+  print('Code signing for the APP...');
+  runCodeSignApp(signCertificate, appPath, isVerbose);
+  print('Signed');
+
+  print('Building DMG...');
+  runDmgBuild(settingsPath, appPath, dmg, appName, isVerbose);
+  print('Built');
+
+  print('Code signing for the DMG...');
+  runCodeSignDmg(dmg, signCertificate, isVerbose);
+  print('Signed');
+
+  print('Notarizing...');
+  final notaryOutput = runNotaryTool(dmg, notaryProfile, isVerbose);
+
+  final regex = RegExp(r'id: (\w+-\w+-\w+-\w+-\w+)');
+  final match = regex.firstMatch(notaryOutput);
+  if (match == null) {
+    print('The `id` not found from notary output:');
+    print(notaryOutput);
+    return;
+  }
+
+  final noratyId = match.group(1);
+  if (noratyId == null) {
+    print('The matched `id` not found from notary output:');
+    print(notaryOutput);
+    return;
+  }
+
+  final dmgPath = (dmg.split(separator)..removeLast()).join(separator);
+  final notaryLogPath = joinPaths([dmgPath, 'notary_log.json']);
+
   if (isVerbose) {
-    print(r.stdout);
+    print('Notary log path: $notaryLogPath');
   }
-}
 
-/// no-doc
-void runCodeSignApp(String signCertificate, String appPath, bool isVerbose) {
-  _codesign(signCertificate, appPath, isDeep: true, isVerbose: isVerbose);
-}
+  final logFile = File(notaryLogPath);
 
-/// no-doc
-String getSettingsPath(
-    String appParentPath, String? settings, String? licensePath) {
-  if (settings != null) return settings;
-
-  final file = File(joinPaths([appParentPath, 'dmgbuild_settings.py']));
-  file.writeAsStringSync(generateSettings(licensePath));
-  return file.path;
-}
-
-/// no-doc
-void runDmgBuild(String settings, String app, String dmg, String volumeName,
-    bool isVerbose) {
-  final r = Process.runSync(
-      'dmgbuild', ['-s', settings, '-D', 'app=$app', volumeName, dmg]);
-  if (isVerbose) {
-    print(r.stdout);
-  }
-}
-
-/// no-doc
-void runCodeSignDmg(String dmg, String signCertificate, bool isVerbose) {
-  _codesign(signCertificate, dmg, isDeep: false, isVerbose: isVerbose);
-}
-
-/// no-doc
-String runNotaryTool(String dmg, bool isVerbose) {
-  final o = Process.runSync('xcrun', [
-    'notarytool',
-    'submit',
+  final success = await waitAndCheckNoratyState(
+    notaryOutput,
     dmg,
-    '--keychain-profile',
-    'NotaryProfile',
-  ]).stdout;
-  if (isVerbose) {
-    print(o);
+    notaryProfile,
+    noratyId,
+    logFile,
+    isVerbose,
+  );
+
+  if (success) {
+    print('Stapling...');
+    runStaple(dmg, isVerbose);
+    print('Stapled');
+    print('Everything is done. Output: $dmg');
+  } else {
+    print('Done with error.');
   }
-  return o;
-}
-
-/// no-doc
-Future<bool> waitAndCheckNoratyState(
-  String notaryOutput,
-  String dmg,
-  String notaryProfile,
-  String noratyId,
-  File logFile,
-  bool isVerbose,
-) async {
-  bool success = false;
-  do {
-    await Future.delayed(const Duration(seconds: 30));
-
-    print('Checking for the notary result...');
-    Process.runSync('xcrun', [
-      'notarytool',
-      'log',
-      noratyId,
-      '--keychain-profile',
-      notaryProfile,
-      logFile.path,
-    ]);
-
-    if (!logFile.existsSync()) {
-      print('Still in processing. Waiting...');
-      continue;
-    }
-
-    final json = logFile.readAsStringSync();
-
-    if (isVerbose) {
-      print(json);
-    }
-
-    final decoded = jsonDecode(json);
-    if (decoded['status'] == 'Accepted') {
-      success = true;
-      print('Notarized');
-    } else {
-      print('Notarize error with message: ${decoded['statusSummary']}');
-      print('Look at ${logFile.path} for more details');
-    }
-
-    break;
-  } while (true);
-
-  return success;
-}
-
-/// no-doc
-void runStaple(String dmg, bool isVerbose) {
-  final r = Process.runSync('xcrun', ['stapler', 'staple', dmg]);
-  if (isVerbose) {
-    print(r.stdout);
-  }
-}
-
-/// Delete build of macos
-void cleanBuild(bool isVerbose) {
-  final build = Directory(joinPaths(['.', 'build', 'macos']));
-  if (!build.existsSync()) return;
-
-  build.deleteSync(recursive: true);
 }
