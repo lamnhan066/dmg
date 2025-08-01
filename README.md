@@ -3,10 +3,13 @@
 
 A Flutter package that helps you create, sign, notarize, and staple a .DMG with a single command.
 
-# Features
+## Features
 
-- Easy to use: Streamline the entire process with one command.
-- Security: Ensures your .DMG files are signed and notarized as per Apple's requirements.
+- **Easy to use**: Streamline the entire process with one command
+- **Comprehensive**: Handles building, signing, notarizing, and stapling
+- **Error handling**: Robust error handling with detailed logging
+- **Security**: Ensures your .DMG files are signed and notarized as per Apple's requirements
+- **Flexible**: Supports custom settings, license files, and build configurations
 
 ## Requirements
 
@@ -17,6 +20,7 @@ All these steps are needed only for the first app. You can reuse these settings 
 - Python (version 3.x or later)
 - Flutter
 - Xcode (for macOS)
+- A valid Apple Developer account with certificates
 
 ### Install `dmgbuild` if you haven't ([documentation](https://dmgbuild.readthedocs.io/en/latest/))
 
@@ -50,19 +54,36 @@ Add this package to your development dependency:
 flutter pub add --dev dmg
 ```
 
-Open a terminal in your current project, then run:
+### Basic Usage
+
+Open a terminal in your Flutter project root, then run:
 
 ```shell
 dart run dmg
 ```
 
-This package will automatically retrieve Developer ID certificate for code signing. If multiple valid certificates are available, a list of options will be displayed, and you have to select one. If you want to set it yourself, you can add this option:
+This will automatically:
+
+1. Clean the build directory (optional)
+2. Run `flutter build macos --release --obfuscate --split-debug-info=debug-macos-info`
+3. Code sign the .app bundle
+4. Create a DMG file
+5. Code sign the DMG
+6. Submit for notarization
+7. Wait for notarization to complete
+8. Staple the notarized DMG
+
+### Advanced Options
+
+#### Custom Signing Certificate
+
+The package will automatically retrieve and select your Developer ID certificate. If multiple certificates are available, you'll be prompted to choose one. To specify a certificate manually:
 
 ```shell
 --sign-certificate "Developer ID Application: Your Company"
 ```
 
-Sometimes, it is necessary to add two spaces between the words "Your" and "Company" like "Your  Company".
+**Note**: Sometimes you may need to add extra spaces between words, e.g., `"Your  Company"`.
 
 The package will automatically run `flutter build macos --release --obfuscate --split-debug-info=debug-macos-info`. If you want to do it yourself, you can pass this flag to the command:
 
