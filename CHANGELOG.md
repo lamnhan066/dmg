@@ -1,3 +1,8 @@
+## 0.1.5
+
+* Improve error handling and logging.
+* Update README.
+
 ## 0.1.4
 
 * Add `--no-clean-build` flag to skip the clean build behavior before running the build command (resolve [#3](https://github.com/lamnhan066/dmg/issues/3)).
