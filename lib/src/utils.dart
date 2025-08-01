@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dmg/generate_settings.dart';
+import 'package:dmg/src/generate_settings.dart';
 import 'package:logging/logging.dart';
 
 final log = Logger.root..level = Level.ALL;
