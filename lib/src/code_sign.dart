@@ -2,91 +2,133 @@ import 'dart:io';
 
 import 'package:dmg/src/utils.dart';
 
-/// no-doc
-void runCodeSignApp(String signCertificate, String appPath, bool isVerbose) {
-  _codesign(signCertificate, appPath, isDeep: true, isVerbose: isVerbose);
+/// Code sign the app bundle
+bool runCodeSignApp(String signCertificate, String appPath, bool isVerbose) {
+  return _codesign(signCertificate, appPath,
+      isDeep: true, isVerbose: isVerbose);
 }
 
-/// no-doc
-void runCodeSignDmg(String dmg, String signCertificate, bool isVerbose) {
-  _codesign(signCertificate, dmg, isDeep: false, isVerbose: isVerbose);
+/// Code sign the DMG file
+bool runCodeSignDmg(String dmg, String signCertificate, bool isVerbose) {
+  return _codesign(signCertificate, dmg, isDeep: false, isVerbose: isVerbose);
 }
 
-String getSignCertificate(String? signCertificate) {
+/// Get signing certificate, with better error handling
+String? getSignCertificate(String? signCertificate) {
   // Find the Developer ID certificate if not provided
   if (signCertificate == null || signCertificate.isEmpty) {
-    final result = Process.runSync(
-      'security',
-      ['find-identity', '-v', '-p', 'codesigning'],
-    );
-    final identities = result.stdout as String;
+    try {
+      final result = Process.runSync(
+        'security',
+        ['find-identity', '-v', '-p', 'codesigning'],
+      );
 
-    // Extract all Developer ID certificates
-    final matches =
-        RegExp(r'"Developer ID Application:.*?"').allMatches(identities);
-    final certificates =
-        matches.map((m) => m.group(0)?.replaceAll('"', '') ?? '').toList();
+      if (result.exitCode != 0) {
+        log.warning('Failed to query keychain for certificates');
+        return null;
+      }
 
-    if (certificates.isEmpty) {
-      log.warning('Error: No Developer ID certificate found.');
-      exit(1);
-    } else if (certificates.length == 1) {
-      signCertificate = certificates.first;
-    } else {
-      log.info('Multiple Developer ID certificates found:');
-      for (var i = 0; i < certificates.length; i++) {
-        log.info('${i + 1}: ${certificates[i]}');
+      final identities = result.stdout as String;
+
+      // Extract all Developer ID certificates
+      final matches =
+          RegExp(r'"Developer ID Application:.*?"').allMatches(identities);
+      final certificates =
+          matches.map((m) => m.group(0)?.replaceAll('"', '') ?? '').toList();
+
+      if (certificates.isEmpty) {
+        log.warning('Error: No Developer ID certificate found.');
+        return null;
+      } else if (certificates.length == 1) {
+        signCertificate = certificates.first;
+        log.info('Auto-selected certificate: $signCertificate');
+      } else {
+        log.info('Multiple Developer ID certificates found:');
+        for (var i = 0; i < certificates.length; i++) {
+          log.info('${i + 1}: ${certificates[i]}');
+        }
+        stdout.write('Select a certificate (1-${certificates.length}): ');
+        final input = stdin.readLineSync();
+        final selection = int.tryParse(input ?? '');
+        if (selection == null ||
+            selection < 1 ||
+            selection > certificates.length) {
+          log.warning('Invalid selection: $input');
+          return null;
+        }
+        signCertificate = certificates[selection - 1];
       }
-      stdout.write('Select a certificate (1-${certificates.length}): ');
-      final selection = int.tryParse(stdin.readLineSync() ?? '');
-      if (selection == null ||
-          selection < 1 ||
-          selection > certificates.length) {
-        log.warning('Invalid selection.');
-        exit(1);
-      }
-      signCertificate = certificates[selection - 1];
+    } catch (e) {
+      log.warning('Error retrieving certificates: $e');
+      return null;
     }
   }
 
   return signCertificate;
 }
 
-/// no-doc
-void _codesign(
+/// Code signing function with better error handling
+bool _codesign(
   String signCertificate,
   String filePath, {
   bool isRuntime = true,
   bool isDeep = false,
   bool isVerbose = false,
+  String entitlementsPath = 'macos/Runner/Release.entitlements',
 }) {
-  // Run the codesign command
-  final r = Process.runSync(
-    'codesign',
-    [
+  try {
+    // Validate inputs
+    if (signCertificate.isEmpty) {
+      log.warning('No signing certificate provided');
+      return false;
+    }
+
+    if (!File(filePath).existsSync() && !Directory(filePath).existsSync()) {
+      log.warning('File/directory to sign does not exist: $filePath');
+      return false;
+    }
+
+    if (!File(entitlementsPath).existsSync()) {
+      log.warning('Entitlements file does not exist: $entitlementsPath');
+      return false;
+    }
+
+    final args = [
       '--force',
       '--timestamp',
-      '--strict',
+      '--options',
+      if (isRuntime) 'runtime' else 'none',
       '-s',
       signCertificate,
-      '--entitlements',
-      'macos/Runner/Release.entitlements',
-      filePath,
       if (isDeep) '--deep',
-      if (isRuntime) '--options=runtime',
+      '--entitlements',
+      entitlementsPath,
       if (isVerbose) '-vvv',
-    ],
-  );
+      filePath,
+    ];
 
-  // Check the result
-  if (r.exitCode == 0) {
-    log.info('Code signing successful!');
-  } else {
-    log.warning('Code signing failed: ${r.stderr}');
-    exit(1);
-  }
+    log.info('Running `codesign` with arguments: ${args.join(' ')}');
 
-  if (isVerbose) {
-    log.info(r.stdout);
+    // Run the codesign command
+    final r = Process.runSync('codesign', args);
+
+    // Check the result
+    if (r.exitCode == 0) {
+      log.info('Code signing successful!');
+      if (isVerbose) {
+        log.info(r.stdout);
+      }
+      return true;
+    } else {
+      log.warning('Code signing failed with exit code ${r.exitCode}');
+      log.warning('Error: ${r.stderr}');
+      if (isVerbose) {
+        log.info('Output: ${r.stdout}');
+      }
+      return false;
+    }
+  } catch (e) {
+    log.warning('Exception during code signing: $e');
+    return false;
   }
 }

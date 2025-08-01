@@ -1,7 +1,9 @@
+/// Generates dmgbuild settings for creating macOS DMG files
 String generateSettings(String? licensePath) {
-  String licenese = '';
+  String license = '';
   if (licensePath != null) {
-    licenese = '''
+    license = '''
+# License configuration
 data = ''
 with open('$licensePath', "r") as file:
     data = file.read()
@@ -26,6 +28,10 @@ license = {
   }
 
   return '''
+# DMG Build Settings
+# Generated automatically by the dmg package
+# https://dmgbuild.readthedocs.io/en/latest/settings.html
+
 import os.path
 import plistlib
 
@@ -34,6 +40,7 @@ appname = os.path.basename(application)
 
 
 def icon_from_app(app_path):
+    """Extract icon from app bundle"""
     plist_path = os.path.join(app_path, "Contents", "Info.plist")
     with open(plist_path, "rb") as f:
         plist = plistlib.load(f)
@@ -44,6 +51,7 @@ def icon_from_app(app_path):
     icon_name = icon_root + icon_ext
     return os.path.join(app_path, "Contents", "Resources", icon_name)
 
+# Basic DMG settings
 format = defines.get("format", "UDBZ")  
 size = defines.get("size", None)  
 files = [application]
@@ -52,6 +60,7 @@ badge_icon = icon_from_app(application)
 icon_locations = {appname: (140, 120), "Applications": (500, 120)}
 background = "builtin-arrow"
 
+# Window appearance
 show_status_bar = False
 show_tab_view = False
 show_toolbar = False
@@ -65,6 +74,7 @@ show_icon_preview = False
 include_icon_view_settings = "auto"
 include_list_view_settings = "auto"
 
+# Icon view settings
 arrange_by = None
 grid_offset = (0, 0)
 grid_spacing = 100
@@ -73,6 +83,7 @@ label_pos = "bottom"
 text_size = 16
 icon_size = 128
 
+# List view settings
 list_icon_size = 16
 list_text_size = 12
 list_scroll_position = (0, 0)
@@ -104,6 +115,6 @@ list_column_sort_directions = {
     "version": "ascending",
     "comments": "ascending",
 }
-$licenese
+$license
 ''';
 }

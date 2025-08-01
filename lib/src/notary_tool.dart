@@ -3,33 +3,50 @@ import 'dart:io';
 
 import 'package:dmg/src/utils.dart';
 
-/// no-doc
-String runNotaryTool(String dmg, String notaryProfile, bool isVerbose) {
-  log.info('Using notary profile: $notaryProfile');
+/// Submit DMG for notarization with error handling
+String? runNotaryTool(String dmg, String notaryProfile, bool isVerbose) {
+  try {
+    if (!File(dmg).existsSync()) {
+      log.warning('DMG file does not exist: $dmg');
+      return null;
+    }
 
-  final result = Process.runSync('xcrun', [
-    'notarytool',
-    'submit',
-    dmg,
-    '--keychain-profile',
-    notaryProfile,
-  ]);
+    log.info('Using notary profile: $notaryProfile');
 
-  final output = result.stdout as String;
+    final result = Process.runSync('xcrun', [
+      'notarytool',
+      'submit',
+      dmg,
+      '--keychain-profile',
+      notaryProfile,
+    ]);
 
-  if (isVerbose) {
-    log.info(output);
+    if (result.exitCode != 0) {
+      log.warning(
+          'Notarization submission failed with exit code ${result.exitCode}');
+      log.warning('Error: ${result.stderr}');
+      return null;
+    }
+
+    final output = result.stdout as String;
+
+    if (isVerbose) {
+      log.info(output);
+    }
+
+    return output;
+  } catch (e) {
+    log.warning('Exception during notarization submission: $e');
+    return null;
   }
-
-  return output;
 }
 
-/// no-doc
-Future<bool> waitAndCheckNoratyState(
+/// Waits for and checks notary state
+Future<bool> waitAndCheckNotaryState(
   String notaryOutput,
   String dmg,
   String notaryProfile,
-  String noratyId,
+  String notaryId,
   File logFile,
   bool isVerbose,
 ) async {
@@ -41,7 +58,7 @@ Future<bool> waitAndCheckNoratyState(
     Process.runSync('xcrun', [
       'notarytool',
       'log',
-      noratyId,
+      notaryId,
       '--keychain-profile',
       notaryProfile,
       logFile.path,
