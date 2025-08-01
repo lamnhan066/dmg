@@ -70,6 +70,12 @@ The package will automatically run `flutter build macos --release --obfuscate --
 --no-build
 ```
 
+When the package runs the `build` command, it will also clean the `build/macos` folder to ensure the output files is valid. If you want to skip this behavior, you can pass this flag:
+
+```shell
+--no-clean-build
+```
+
 Change the notary profile name if you haven't used the default by adding:
 
 ```shell
