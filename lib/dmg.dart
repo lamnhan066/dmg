@@ -46,7 +46,7 @@ Future<void> execute(List<String> args) async {
       help:
           'Clean the `build/macos` folder before running the `build` command. '
           'This flag will be ignored if the `build` flag is set to `--no-build`.',
-      defaultsTo: false,
+      defaultsTo: true,
     )
     ..addFlag(
       'verbose',
