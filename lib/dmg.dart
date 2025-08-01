@@ -10,7 +10,7 @@ import 'package:dmg/src/notary_tool.dart';
 import 'package:dmg/src/staple.dart';
 import 'package:dmg/src/utils.dart';
 
-Future<void> execute(List<String> args) async {
+Future<int> execute(List<String> args) async {
   final releasePath =
       joinPaths(['.', 'build', 'macos', 'Build', 'Products', 'Release']);
 
@@ -66,7 +66,7 @@ Future<void> execute(List<String> args) async {
 
   if (param['help'] ?? false) {
     log.info(parser.usage);
-    return;
+    return 0;
   }
 
   final settings = param['settings'] as String?;
@@ -89,7 +89,7 @@ Future<void> execute(List<String> args) async {
       log.warning(
           'Error: `flutter build macos --release` failed. Please check your project settings and logs for further details.');
       log.warning('Exit');
-      return;
+      return 1;
     }
     log.info('Released');
   }
@@ -100,7 +100,7 @@ Future<void> execute(List<String> args) async {
     log.warning(
         'Please run `flutter build macos --release` first or add a flag `--build` to the command.');
     log.warning('Exit');
-    return;
+    return 1;
   }
 
   final appParentPath = getParentAppPath(appPath);
@@ -132,14 +132,14 @@ Future<void> execute(List<String> args) async {
   if (match == null) {
     log.warning('The `id` not found from notary output:');
     log.warning(notaryOutput);
-    return;
+    return 1;
   }
 
   final noratyId = match.group(1);
   if (noratyId == null) {
     log.warning('The matched `id` not found from notary output:');
     log.warning(notaryOutput);
-    return;
+    return 1;
   }
 
   final dmgPath = (dmg.split(separator)..removeLast()).join(separator);
@@ -167,5 +167,8 @@ Future<void> execute(List<String> args) async {
     log.info('Everything is done. Output: $dmg');
   } else {
     log.warning('Done with error.');
+    return 1;
   }
+
+  return 0;
 }

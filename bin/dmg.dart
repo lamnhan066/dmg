@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dmg/dmg.dart';
 import 'package:dmg/src/utils.dart';
 
@@ -7,5 +9,9 @@ void main(List<String> args) async {
     print('${record.level.name}: ${record.message}');
   });
 
-  await execute(args);
+  final exitCode = await execute(args);
+
+  if (exitCode != 0) {
+    exit(exitCode);
+  }
 }
