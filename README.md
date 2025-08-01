@@ -26,7 +26,7 @@ pip install dmgbuild
 
 ### Create a `NotaryProfile`
 
-**1.** Go to [App Store Connect -> Users and Access -> Keys](https://appstoreconnect.apple.com/access/api).
+**1.** Go to [App Store Connect -> Users and Access -> Integrations -> App Store Connect API](https://appstoreconnect.apple.com/access/integrations/api).
 
 **2.** Click (+) to generate a new API key, input a Name (normally use `NotaryProfile`) and Access (normally use `Admin`).
 
