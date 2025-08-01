@@ -10,18 +10,6 @@ import 'package:dmg/src/notary_tool.dart';
 import 'package:dmg/src/staple.dart';
 import 'package:dmg/src/utils.dart';
 
-// Export main functions for testing and external use
-export 'src/utils.dart'
-    show
-        isCommandAvailable,
-        joinPaths,
-        getAppName,
-        getParentAppPath,
-        getAppPath,
-        validateSystemRequirements,
-        isFlutterProject,
-        isMacOSSupported;
-
 Future<int> execute(List<String> args) async {
   try {
     final releasePath =
@@ -36,7 +24,8 @@ Future<int> execute(List<String> args) async {
       ..addOption(
         'settings',
         help:
-            'Path of the modified `settings.py` file. Use default setting if not provided. Read more on https://dmgbuild.readthedocs.io/en/latest/settings.html',
+            'Path of the modified `settings.py` file. Use default setting if not provided. '
+            'Read more on https://dmgbuild.readthedocs.io/en/latest/settings.html',
       )
       ..addOption(
         'license-path',

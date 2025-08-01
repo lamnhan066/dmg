@@ -4,13 +4,22 @@ import 'package:dmg/src/utils.dart';
 
 /// Code sign the app bundle
 bool runCodeSignApp(String signCertificate, String appPath, bool isVerbose) {
-  return _codesign(signCertificate, appPath,
-      isDeep: true, isVerbose: isVerbose);
+  return _codesign(
+    signCertificate,
+    appPath,
+    isDeep: true,
+    isVerbose: isVerbose,
+  );
 }
 
 /// Code sign the DMG file
 bool runCodeSignDmg(String dmg, String signCertificate, bool isVerbose) {
-  return _codesign(signCertificate, dmg, isDeep: false, isVerbose: isVerbose);
+  return _codesign(
+    signCertificate,
+    dmg,
+    isDeep: false,
+    isVerbose: isVerbose,
+  );
 }
 
 /// Get signing certificate, with better error handling
