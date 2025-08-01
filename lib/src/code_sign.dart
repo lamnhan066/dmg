@@ -105,6 +105,7 @@ bool _codesign(
     final args = [
       '--force',
       '--timestamp',
+      '--strict',
       '--options',
       if (isRuntime) 'runtime' else 'none',
       '-s',
