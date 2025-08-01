@@ -22,7 +22,7 @@ bool runFlutterRelease(bool isVerbose, String releasePath) {
 }
 
 /// Delete build of macos
-void cleanBuild(bool isVerbose) {
+void runCleanBuild(bool isVerbose) {
   final build = Directory(joinPaths(['.', 'build', 'macos']));
   if (!build.existsSync()) return;
 

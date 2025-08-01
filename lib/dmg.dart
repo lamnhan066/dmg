@@ -42,6 +42,13 @@ Future<void> execute(List<String> args) async {
       defaultsTo: true,
     )
     ..addFlag(
+      'clean-build',
+      help:
+          'Clean the `build/macos` folder before running the `build` command. '
+          'This flag will be ignored if the `build` flag is set to `--no-build`.',
+      defaultsTo: false,
+    )
+    ..addFlag(
       'verbose',
       abbr: 'v',
       negatable: false,
@@ -67,12 +74,15 @@ Future<void> execute(List<String> args) async {
   var signCertificate = param['sign-certificate'] as String?;
   var notaryProfile = param['notary-profile'] as String;
   final runBuild = param['build'] as bool;
+  final cleanBuild = param['clean-build'] as bool;
   final isVerbose = param['verbose'] as bool;
 
   if (runBuild) {
-    log.info('Cleaning build...');
-    cleanBuild(isVerbose);
-    log.info('Cleaned');
+    if (cleanBuild) {
+      log.info('Cleaning build...');
+      runCleanBuild(isVerbose);
+      log.info('Cleaned');
+    }
 
     log.info('Flutter release...');
     if (!runFlutterRelease(isVerbose, releasePath)) {
