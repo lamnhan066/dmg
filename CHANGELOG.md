@@ -1,3 +1,8 @@
+## 0.1.4
+
+* Add `--no-clean-build` flag to skip the clean build behavior before running the build command (resolve [#3](https://github.com/lamnhan066/dmg/issues/3)).
+* Ensure that the exit code is set to a non-zero value in case of any issues.
+
 ## 0.1.3
 
 * Add `--strict` and `--entitlements=macos/Runner/Release.entitlements` to codesign process ([see more](https://github.com/juliansteenbakker/flutter_secure_storage/issues/804#issuecomment-2650518260)).
