@@ -1,3 +1,8 @@
+## 0.1.6
+
+* Fix [dmgbuild #199](https://github.com/dmgbuild/dmgbuild/issues/199) caused the dmgbuild to crash.
+* Update logs.
+
 ## 0.1.5
 
 * Improve error handling and logging.
