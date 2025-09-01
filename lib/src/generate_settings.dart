@@ -15,12 +15,12 @@ license = {
     },
     "buttons": {
         "en_US": (
-            b"English",
-            b"Agree!",
-            b"Disagree!",
-            b"Print!",
-            b"Save!",
-            b'Do you agree or not? Press "Agree" or "Disagree".',
+            "English",
+            "Agree!",
+            "Disagree!",
+            "Print!",
+            "Save!",
+            'Do you agree or not? Press "Agree" or "Disagree".',
         ),
     },
 }
