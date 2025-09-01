@@ -117,7 +117,7 @@ bool _codesign(
       filePath,
     ];
 
-    log.info('Running `codesign` with arguments: ${args.join(' ')}');
+    log.info('Running `codesign`...');
 
     // Run the codesign command
     final r = Process.runSync('codesign', args);
