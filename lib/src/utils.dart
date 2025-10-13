@@ -81,23 +81,38 @@ String getSettingsPath(
 }
 
 /// Validate system requirements before starting
-bool validateSystemRequirements() {
+bool validateSystemRequirements(bool requiresSigning) {
   final requirements = [
-    {'command': 'flutter', 'description': 'Flutter SDK'},
-    {'command': 'xcrun', 'description': 'Xcode Command Line Tools'},
-    {'command': 'codesign', 'description': 'Code signing tools'},
-    {'command': 'security', 'description': 'Keychain access'},
+    {'command': 'flutter', 'description': 'Flutter SDK', 'required': true},
     {
       'command': 'dmgbuild',
-      'description': 'DMG build tool (install with: pip install dmgbuild)'
+      'description': 'DMG build tool (install with: pip install dmgbuild)',
+      'required': true
+    },
+    {
+      'command': 'xcrun',
+      'description': 'Xcode Command Line Tools',
+      'required': requiresSigning
+    },
+    {
+      'command': 'codesign',
+      'description': 'Code signing tools',
+      'required': requiresSigning
+    },
+    {
+      'command': 'security',
+      'description': 'Keychain access',
+      'required': requiresSigning
     },
   ];
 
   bool allValid = true;
   for (final req in requirements) {
-    if (!isCommandAvailable(req['command']!)) {
+    final isRequired = req['required'] as bool;
+    final command = req['command'] as String;
+    if (isRequired && !isCommandAvailable(command)) {
       log.warning('Missing requirement: ${req['description']}');
-      if (req['command'] == 'dmgbuild') {
+      if (command == 'dmgbuild') {
         log.info('Install with: pip install dmgbuild');
       }
       allValid = false;

@@ -10,15 +10,20 @@ A Flutter package that helps you create, sign, notarize, and staple a .DMG with 
 - **Error handling**: Robust error handling with detailed logging
 - **Security**: Ensures your .DMG files are signed and notarized as per Apple's requirements
 - **Flexible**: Supports custom settings, license files, and build configurations
+- **CI-friendly**: Create unsigned DMGs for testing without Apple Developer certificates
 
 ## Requirements
 
 All these steps are needed only for the first app. You can reuse these settings in other apps.
 
-### Before installation, ensure you have the following
+### For all builds
 
 - Python (version 3.x or later)
 - Flutter
+- `dmgbuild` (see installation below)
+
+### For signed/notarized builds (production)
+
 - Xcode (for macOS)
 - A valid Apple Developer account with certificates
 
@@ -56,6 +61,8 @@ flutter pub add --dev dmg
 
 ### Basic Usage
 
+#### Production Build (Signed & Notarized)
+
 Open a terminal in your Flutter project root, then run:
 
 ```shell
@@ -73,7 +80,31 @@ This will automatically:
 7. Wait for notarization to complete
 8. Staple the notarized DMG
 
+#### Test Build (Unsigned)
+
+For quick testing or CI environments without Apple Developer certificates:
+
+```shell
+dart run dmg --no-sign --no-notarization
+```
+
+**Note:** Unsigned DMGs should not be distributed to end users and will show security warnings when opened.
+
 ### Advanced Options
+
+#### Skip Signing and Notarization
+
+For test builds without Apple Developer certificates:
+
+```shell
+dart run dmg --no-sign --no-notarization
+```
+
+Or skip only notarization (still signs the DMG):
+
+```shell
+dart run dmg --no-notarization
+```
 
 #### Custom Signing Certificate
 
