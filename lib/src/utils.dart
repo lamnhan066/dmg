@@ -112,9 +112,6 @@ bool validateSystemRequirements(bool requiresSigning) {
     final command = req['command'] as String;
     if (isRequired && !isCommandAvailable(command)) {
       log.warning('Missing requirement: ${req['description']}');
-      if (command == 'dmgbuild') {
-        log.info('Install with: pip install dmgbuild');
-      }
       allValid = false;
     }
   }
