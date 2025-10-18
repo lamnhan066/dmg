@@ -1,6 +1,11 @@
+## 0.1.7
+
+* Add options to skip signing and notarizing (thanks to @luksab).
+* Update README.
+
 ## 0.1.6
 
-* Fix [dmgbuild #199](https://github.com/dmgbuild/dmgbuild/issues/199) caused the dmgbuild to crash.
+* Fix [dmgbuild](https://github.com/dmgbuild/dmgbuild/issues/199) caused the dmgbuild to crash.
 * Update logs.
 
 ## 0.1.5
