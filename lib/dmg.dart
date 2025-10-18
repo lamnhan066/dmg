@@ -51,6 +51,19 @@ Future<int> execute(List<String> args) async {
         defaultsTo: true,
       )
       ..addFlag(
+        'sign',
+        help:
+            'Code sign the .app and .dmg files. Set to --no-sign to skip signing for test builds.',
+        defaultsTo: true,
+      )
+      ..addFlag(
+        'notarization',
+        help:
+            'Submit for notarization and staple. Set to --no-notarization to skip notarization for test builds. '
+            'This flag will be ignored if the `sign` flag is set to `--no-sign`.',
+        defaultsTo: true,
+      )
+      ..addFlag(
         'verbose',
         abbr: 'v',
         negatable: false,
@@ -78,6 +91,8 @@ Future<int> execute(List<String> args) async {
     var notaryProfile = param['notary-profile'] as String;
     final runBuild = param['build'] as bool;
     final cleanBuild = param['clean-build'] as bool;
+    final runSign = param['sign'] as bool;
+    final runNotarization = param['notarization'] as bool;
     final isVerbose = param['verbose'] as bool;
 
     // Validate inputs
@@ -108,7 +123,7 @@ Future<int> execute(List<String> args) async {
     }
 
     // Validate system requirements
-    if (!validateSystemRequirements()) {
+    if (!validateSystemRequirements(runSign)) {
       log.warning(
           'System requirements not met. Please install missing dependencies.');
       return 1;
@@ -153,21 +168,25 @@ Future<int> execute(List<String> args) async {
       return 1;
     }
 
-    final certificate = getSignCertificate(signCertificate);
-    if (certificate == null) {
-      log.warning('Failed to get signing certificate');
-      return 1;
-    }
-    signCertificate = certificate;
+    if (runSign) {
+      final certificate = getSignCertificate(signCertificate);
+      if (certificate == null) {
+        log.warning('Failed to get signing certificate');
+        return 1;
+      }
+      signCertificate = certificate;
 
-    log.info('Using signing identity: $signCertificate');
+      log.info('Using signing identity: $signCertificate');
 
-    log.info('Code signing for the APP...');
-    if (!runCodeSignApp(signCertificate, appPath, isVerbose)) {
-      log.warning('Failed to code sign the app');
-      return 1;
+      log.info('Code signing for the APP...');
+      if (!runCodeSignApp(signCertificate, appPath, isVerbose)) {
+        log.warning('Failed to code sign the app');
+        return 1;
+      }
+      log.info('Signed');
+    } else {
+      log.info('Skipping code signing (--no-sign)');
     }
-    log.info('Signed');
 
     log.info('Building DMG...');
     if (!runDmgBuild(settingsPath, appPath, dmg, appName, isVerbose)) {
@@ -176,64 +195,77 @@ Future<int> execute(List<String> args) async {
     }
     log.info('Built');
 
-    log.info('Code signing for the DMG...');
-    if (!runCodeSignDmg(dmg, signCertificate, isVerbose)) {
-      log.warning('Failed to code sign the DMG');
-      return 1;
-    }
-    log.info('Signed');
-
-    log.info('Notarizing...');
-    final notaryOutput = runNotaryTool(dmg, notaryProfile, isVerbose);
-    if (notaryOutput == null) {
-      log.warning('Failed to submit for notarization');
-      return 1;
-    }
-
-    final regex = RegExp(r'id: (\w+-\w+-\w+-\w+-\w+)');
-    final match = regex.firstMatch(notaryOutput);
-    if (match == null) {
-      log.warning('The `id` not found from notary output:');
-      log.warning(notaryOutput);
-      return 1;
-    }
-
-    final notaryId = match.group(1);
-    if (notaryId == null) {
-      log.warning('The matched `id` not found from notary output:');
-      log.warning(notaryOutput);
-      return 1;
-    }
-
-    final dmgPath = (dmg.split(separator)..removeLast()).join(separator);
-    final notaryLogPath = joinPaths([dmgPath, 'notary_log.json']);
-
-    if (isVerbose) {
-      log.info('Notary log path: $notaryLogPath');
-    }
-
-    final logFile = File(notaryLogPath);
-
-    final success = await waitAndCheckNotaryState(
-      notaryOutput,
-      dmg,
-      notaryProfile,
-      notaryId,
-      logFile,
-      isVerbose,
-    );
-
-    if (success) {
-      log.info('Stapling...');
-      if (!runStaple(dmg, isVerbose)) {
-        log.warning('Failed to staple the DMG');
+    if (runSign) {
+      log.info('Code signing for the DMG...');
+      if (!runCodeSignDmg(dmg, signCertificate!, isVerbose)) {
+        log.warning('Failed to code sign the DMG');
         return 1;
       }
-      log.info('Stapled');
-      log.info('Everything is done. Output: $dmg');
+      log.info('Signed');
     } else {
-      log.warning('Done with error.');
-      return 1;
+      log.info('Skipping DMG code signing (--no-sign)');
+    }
+
+    if (runSign && runNotarization) {
+      log.info('Notarizing...');
+      final notaryOutput = runNotaryTool(dmg, notaryProfile, isVerbose);
+      if (notaryOutput == null) {
+        log.warning('Failed to submit for notarization');
+        return 1;
+      }
+
+      final regex = RegExp(r'id: (\w+-\w+-\w+-\w+-\w+)');
+      final match = regex.firstMatch(notaryOutput);
+      if (match == null) {
+        log.warning('The `id` not found from notary output:');
+        log.warning(notaryOutput);
+        return 1;
+      }
+
+      final notaryId = match.group(1);
+      if (notaryId == null) {
+        log.warning('The matched `id` not found from notary output:');
+        log.warning(notaryOutput);
+        return 1;
+      }
+
+      final dmgPath = (dmg.split(separator)..removeLast()).join(separator);
+      final notaryLogPath = joinPaths([dmgPath, 'notary_log.json']);
+
+      if (isVerbose) {
+        log.info('Notary log path: $notaryLogPath');
+      }
+
+      final logFile = File(notaryLogPath);
+
+      final success = await waitAndCheckNotaryState(
+        notaryOutput,
+        dmg,
+        notaryProfile,
+        notaryId,
+        logFile,
+        isVerbose,
+      );
+
+      if (success) {
+        log.info('Stapling...');
+        if (!runStaple(dmg, isVerbose)) {
+          log.warning('Failed to staple the DMG');
+          return 1;
+        }
+        log.info('Stapled');
+        log.info('Everything is done. Output: $dmg');
+      } else {
+        log.warning('Done with error.');
+        return 1;
+      }
+    } else {
+      if (!runSign) {
+        log.info('Skipping notarization (requires signing)');
+      } else {
+        log.info('Skipping notarization (--no-notarization)');
+      }
+      log.info('DMG created successfully. Output: $dmg');
     }
 
     return 0;
