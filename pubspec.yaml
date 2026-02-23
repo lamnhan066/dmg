@@ -1,6 +1,6 @@
 name: dmg
 description: A Flutter package that helps you create, sign, notarize, and staple a .DMG with a single command.
-version: 0.1.7
+version: 0.1.8
 homepage: https://github.com/lamnhan066/dmg
 topics:
   - macos
@@ -10,7 +10,7 @@ topics:
   - staple
 
 environment:
-  sdk: ">=2.18.0 <4.0.0"
+  sdk: '>=2.18.0 <4.0.0'
 
 dependencies:
   args: ^2.4.2

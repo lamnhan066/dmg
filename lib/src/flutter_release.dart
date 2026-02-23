@@ -3,7 +3,7 @@ import 'dart:io';
 import 'utils.dart';
 
 /// Run Flutter release build with better error handling
-bool runFlutterRelease(bool isVerbose, String releasePath) {
+bool runFlutterRelease(bool isVerbose, String releasePath, String? flavor) {
   try {
     log.info('Starting Flutter macOS release build...');
 
@@ -11,6 +11,8 @@ bool runFlutterRelease(bool isVerbose, String releasePath) {
       'build',
       'macos',
       '--release',
+      if (flavor != null) '--flavor',
+      if (flavor != null) flavor,
       '--obfuscate',
       '--split-debug-info=${joinPaths(['.', 'build', 'debug-macos-info'])}',
     ]);
