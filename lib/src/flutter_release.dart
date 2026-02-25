@@ -5,7 +5,8 @@ import 'dart:io';
 import 'utils.dart';
 
 /// Run Flutter release build with real-time logging to console
-Future<bool> runFlutterRelease(bool isVerbose, String releasePath, String? flavor) async {
+Future<bool> runFlutterRelease(
+    bool isVerbose, String releasePath, String? flavor) async {
   try {
     log.info('Starting Flutter macOS release build...');
 
@@ -24,11 +25,11 @@ Future<bool> runFlutterRelease(bool isVerbose, String releasePath, String? flavo
     );
 
     process.stdout.transform(utf8.decoder).forEach((line) {
-      print(line);
+      log.info(line);
     });
 
     process.stderr.transform(utf8.decoder).forEach((line) {
-      print(line);
+      log.warning(line);
     });
 
     final exitCode = await process.exitCode;

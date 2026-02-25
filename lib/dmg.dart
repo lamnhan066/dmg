@@ -15,16 +15,19 @@ Future<int> execute(List<String> args) async {
     final parser = ArgParser()
       ..addOption(
         'sign-certificate',
-        help: 'The certificate that you are signed. Ex: `Developer ID Application: Your Company`',
+        help:
+            'The certificate that you are signed. Ex: `Developer ID Application: Your Company`',
       )
       ..addOption(
         'settings',
-        help: 'Path of the modified `settings.py` file. Use default setting if not provided. '
+        help:
+            'Path of the modified `settings.py` file. Use default setting if not provided. '
             'Read more on https://dmgbuild.readthedocs.io/en/latest/settings.html',
       )
       ..addOption(
         'flavor',
-        help: 'The flavor to build for, if your project has flavors configured.',
+        help:
+            'The flavor to build for, if your project has flavors configured.',
       )
       ..addOption(
         'license-path',
@@ -33,27 +36,32 @@ Future<int> execute(List<String> args) async {
       ..addOption(
         'notary-profile',
         defaultsTo: 'NotaryProfile',
-        help: 'Name of the notary profile that created by `xcrun notarytool store-credentials`',
+        help:
+            'Name of the notary profile that created by `xcrun notarytool store-credentials`',
       )
       ..addFlag(
         'build',
-        help: 'Automatically run `flutter build macos --release --obfuscate --split-debug-info=debug-macos-info`.',
+        help:
+            'Automatically run `flutter build macos --release --obfuscate --split-debug-info=debug-macos-info`.',
         defaultsTo: true,
       )
       ..addFlag(
         'clean-build',
-        help: 'Clean the `build/macos` folder before running the `build` command. '
+        help:
+            'Clean the `build/macos` folder before running the `build` command. '
             'This flag will be ignored if the `build` flag is set to `--no-build`.',
         defaultsTo: true,
       )
       ..addFlag(
         'sign',
-        help: 'Code sign the .app and .dmg files. Set to --no-sign to skip signing for test builds.',
+        help:
+            'Code sign the .app and .dmg files. Set to --no-sign to skip signing for test builds.',
         defaultsTo: true,
       )
       ..addFlag(
         'notarization',
-        help: 'Submit for notarization and staple. Set to --no-notarization to skip notarization for test builds. '
+        help:
+            'Submit for notarization and staple. Set to --no-notarization to skip notarization for test builds. '
             'This flag will be ignored if the `sign` flag is set to `--no-sign`.',
         defaultsTo: true,
       )
@@ -111,21 +119,24 @@ Future<int> execute(List<String> args) async {
 
     // Validate we're in a Flutter project
     if (!isFlutterProject()) {
-      log.warning('No valid Flutter project found. Are you in a Flutter project directory?');
+      log.warning(
+          'No valid Flutter project found. Are you in a Flutter project directory?');
       return 1;
     }
 
     // Check if macOS is supported
     if (!isMacOSSupported()) {
       log.warning('macOS platform is not enabled for this Flutter project.');
-      log.info('Enable macOS support with: flutter config --enable-macos-desktop');
+      log.info(
+          'Enable macOS support with: flutter config --enable-macos-desktop');
       log.info('Then run: flutter create --platforms=macos .');
       return 1;
     }
 
     // Validate system requirements
     if (!validateSystemRequirements(runSign)) {
-      log.warning('System requirements not met. Please install missing dependencies.');
+      log.warning(
+          'System requirements not met. Please install missing dependencies.');
       return 1;
     }
 
@@ -140,7 +151,8 @@ Future<int> execute(List<String> args) async {
       }
 
       log.info('Flutter release...');
-      if (!await runFlutterRelease(isVerbose, releasePath, param['flavor'] as String?)) {
+      if (!await runFlutterRelease(
+          isVerbose, releasePath, param['flavor'] as String?)) {
         log.warning(
             'Error: `flutter build macos --release` failed. Please check your project settings and logs for further details.');
         log.warning('Exit');
@@ -152,7 +164,8 @@ Future<int> execute(List<String> args) async {
     final appPath = getAppPath(releasePath);
     if (appPath == '') {
       log.warning('Cannot get the app path from "$releasePath"');
-      log.warning('Please run `flutter build macos --release` first or add a flag `--build` to the command.');
+      log.warning(
+          'Please run `flutter build macos --release` first or add a flag `--build` to the command.');
       log.warning('Exit');
       return 1;
     }
