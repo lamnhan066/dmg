@@ -140,7 +140,7 @@ Future<int> execute(List<String> args) async {
       }
 
       log.info('Flutter release...');
-      if (!runFlutterRelease(isVerbose, releasePath, param['flavor'] as String?)) {
+      if (!await runFlutterRelease(isVerbose, releasePath, param['flavor'] as String?)) {
         log.warning(
             'Error: `flutter build macos --release` failed. Please check your project settings and logs for further details.');
         log.warning('Exit');
