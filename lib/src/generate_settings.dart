@@ -4,8 +4,8 @@ String generateSettings(String? licensePath) {
   if (licensePath != null) {
     license = '''
 # License configuration
-data = ''
-with open('$licensePath', "r") as file:
+data = b''
+with open('$licensePath', "rb") as file:
     data = file.read()
 
 license = {
