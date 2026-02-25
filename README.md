@@ -1,4 +1,3 @@
-
 # DMG
 
 A Flutter package that helps you create, sign, notarize, and staple a .DMG with a single command.
@@ -80,6 +79,26 @@ This will automatically:
 7. Wait for notarization to complete
 8. Staple the notarized DMG
 
+#### Build With Flavor
+
+If your Flutter macOS app uses flavors, pass the flavor name:
+
+```shell
+dart run dmg --flavor production
+```
+
+When `--flavor` is provided, this package builds with:
+
+```shell
+flutter build macos --release --flavor production --obfuscate --split-debug-info=build/debug-macos-info
+```
+
+And reads the app from:
+
+```shell
+build/macos/Build/Products/Release-production/
+```
+
 #### Test Build (Unsigned)
 
 For quick testing or CI environments without Apple Developer certificates:
@@ -116,11 +135,21 @@ The package will automatically retrieve and select your Developer ID certificate
 
 **Note**: Sometimes you may need to add extra spaces between words, e.g., `"Your  Company"`.
 
+#### Build a Specific Flavor
+
+Use this when your macOS app has Flutter flavors:
+
+```shell
+--flavor "production"
+```
+
 The package will automatically run `flutter build macos --release --obfuscate --split-debug-info=debug-macos-info`. If you want to do it yourself, you can pass this flag to the command:
 
 ```shell
 --no-build
 ```
+
+If you also use `--flavor`, build the same flavor yourself before running `dmg`, or keep `--build` enabled.
 
 When the package runs the `build` command, it will also clean the `build/macos` folder to ensure the output files is valid. If you want to skip this behavior, you can pass this flag:
 
@@ -148,7 +177,10 @@ You can also add your own `settings.py` from [dmg-build](https://dmgbuild.readth
 
 Note that the `--license-path` will be ignored when you use your own `settings.py`.
 
-Your output `DMG` is expected at `build/macos/Build/Products/Release/<name>.dmg`.
+Your output `DMG` is expected at:
+
+- `build/macos/Build/Products/Release/<name>.dmg` (default)
+- `build/macos/Build/Products/Release-<flavor>/<name>.dmg` (when using `--flavor`)
 
 ## Contributions
 

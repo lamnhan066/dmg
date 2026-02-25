@@ -1,36 +1,47 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'utils.dart';
 
-/// Run Flutter release build with better error handling
-bool runFlutterRelease(bool isVerbose, String releasePath) {
+/// Run Flutter release build with real-time logging to console
+Future<bool> runFlutterRelease(bool isVerbose, String releasePath, String? flavor) async {
   try {
     log.info('Starting Flutter macOS release build...');
 
-    final r = Process.runSync('flutter', [
-      'build',
-      'macos',
-      '--release',
-      '--obfuscate',
-      '--split-debug-info=${joinPaths(['.', 'build', 'debug-macos-info'])}',
-    ]);
+    final process = await Process.start(
+      'flutter',
+      [
+        'build',
+        'macos',
+        '--release',
+        if (flavor != null) '--flavor',
+        if (flavor != null) flavor,
+        '--obfuscate',
+        '--split-debug-info=${joinPaths(['.', 'build', 'debug-macos-info'])}',
+        if (isVerbose) '--verbose',
+      ],
+    );
 
-    if (r.exitCode != 0) {
-      log.warning('Flutter build failed with exit code ${r.exitCode}');
-      log.warning('Error: ${r.stderr}');
-      if (isVerbose) {
-        log.info('Output: ${r.stdout}');
-      }
+    process.stdout.transform(utf8.decoder).forEach((line) {
+      print(line);
+    });
+
+    process.stderr.transform(utf8.decoder).forEach((line) {
+      print(line);
+    });
+
+    final exitCode = await process.exitCode;
+
+    if (exitCode != 0) {
+      log.warning('Flutter build failed with exit code $exitCode');
       return false;
     }
 
-    // Check if the app was actually built
+    await Future.delayed(Duration(milliseconds: 500));
+
     final appPath = getAppPath(releasePath);
     final success = appPath.isNotEmpty;
-
-    if (!success || isVerbose) {
-      log.info(r.stdout);
-    }
 
     if (success) {
       log.info('Flutter build completed successfully');
