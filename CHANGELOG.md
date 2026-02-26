@@ -1,3 +1,10 @@
+## 0.1.8
+
+* Add support for flavors (thanks to @jslattery26).
+* Fix license path issue in dmgbuild settings so we can use both absolute and relative paths for license file.
+* Read the license file in binary mode so we can use the RTF file as a license.
+* Update README.
+
 ## 0.1.7
 
 * Add options to skip signing and notarizing (thanks to @luksab).
