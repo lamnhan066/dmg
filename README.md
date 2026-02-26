@@ -28,8 +28,16 @@ All these steps are needed only for the first app. You can reuse these settings 
 
 ### Install `dmgbuild` if you haven't ([documentation](https://dmgbuild.readthedocs.io/en/latest/))
 
+Install the `dmgbuild` package with:
+
 ```shell
 pip install dmgbuild
+```
+
+Or update it with:
+
+```shell
+pip install --upgrade dmgbuild
 ```
 
 ### Create a `NotaryProfile`
