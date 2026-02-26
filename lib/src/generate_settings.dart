@@ -1,14 +1,11 @@
-import 'package:path/path.dart' as path;
-
 /// Generates dmgbuild settings for creating macOS DMG files
 String generateSettings(String? licensePath) {
   String license = '';
   if (licensePath != null) {
-    final absoluteLicensePath = path.absolute(licensePath);
     license = '''
 # License configuration
 data = b''
-with open('$absoluteLicensePath', "rb") as file:
+with open('$licensePath', "rb") as file:
     data = file.read()
 
 license = {
