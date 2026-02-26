@@ -1,3 +1,7 @@
+## 0.1.9
+
+* Revert "fix: use absolute path for license file in dmgbuild settings" because the issue is not completely fixed.
+
 ## 0.1.8
 
 * Add support for flavors (thanks to @jslattery26).
