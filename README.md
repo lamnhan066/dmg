@@ -92,7 +92,7 @@ This will automatically:
 If your Flutter macOS app uses flavors, pass the flavor name:
 
 ```shell
-dart run dmg --flavor production
+dart run dmg --flavor=production
 ```
 
 When `--flavor` is provided, this package builds with:
@@ -189,6 +189,44 @@ Your output `DMG` is expected at:
 
 - `build/macos/Build/Products/Release/<name>.dmg` (default)
 - `build/macos/Build/Products/Release-<flavor>/<name>.dmg` (when using `--flavor`)
+
+### Configure via `pubspec.yaml`
+
+You can move the repeated DMG settings into your app's `pubspec.yaml` and run `dart run dmg` without passing the same flags every time:
+
+```yaml
+dmg:
+  sign-certificate: "Developer ID Application: Your Company"
+  notary-profile: NotaryProfile
+  settings: ./dmg/settings.py
+  license-path: ./dmg/license.txt
+  build: true
+  clean-build: true
+  sign: true
+  notarization: true
+
+dmg_dev:
+  settings: ./dmg/settings.dev.py
+
+dmg_production:
+  settings: ./dmg/settings.prod.py
+```
+
+Use `dmg_<flavor>` for flavor-specific overrides.
+
+For example, this uses `dmg_dev` on top of `dmg`:
+
+```shell
+dart run dmg --flavor=dev
+```
+
+If you run:
+
+```shell
+dart run dmg --flavor=production
+```
+
+This uses `dmg_production` on top of `dmg`. Command-line flags still override the values from `pubspec.yaml`, so you can keep using `--no-build`, `--no-sign`, or `--no-notarization` when you need to override the defaults for a single run.
 
 ## Contributions
 

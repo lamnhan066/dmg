@@ -2,83 +2,17 @@ library dmg;
 
 import 'dart:io';
 
-import 'package:args/args.dart';
 import 'package:dmg/src/code_sign.dart';
 import 'package:dmg/src/dmg_build.dart';
 import 'package:dmg/src/flutter_release.dart';
 import 'package:dmg/src/notary_tool.dart';
+import 'package:dmg/src/pubspec_config.dart';
 import 'package:dmg/src/staple.dart';
 import 'package:dmg/src/utils.dart';
 
 Future<int> execute(List<String> args) async {
   try {
-    final parser = ArgParser()
-      ..addOption(
-        'sign-certificate',
-        help:
-            'The certificate that you are signed. Ex: `Developer ID Application: Your Company`',
-      )
-      ..addOption(
-        'settings',
-        help:
-            'Path of the modified `settings.py` file. Use default setting if not provided. '
-            'Read more on https://dmgbuild.readthedocs.io/en/latest/settings.html',
-      )
-      ..addOption(
-        'flavor',
-        help:
-            'The flavor to build for, if your project has flavors configured.',
-      )
-      ..addOption(
-        'license-path',
-        help: 'Path of the license file',
-      )
-      ..addOption(
-        'notary-profile',
-        defaultsTo: 'NotaryProfile',
-        help:
-            'Name of the notary profile that created by `xcrun notarytool store-credentials`',
-      )
-      ..addFlag(
-        'build',
-        help:
-            'Automatically run `flutter build macos --release --obfuscate --split-debug-info=debug-macos-info`.',
-        defaultsTo: true,
-      )
-      ..addFlag(
-        'clean-build',
-        help:
-            'Clean the `build/macos` folder before running the `build` command. '
-            'This flag will be ignored if the `build` flag is set to `--no-build`.',
-        defaultsTo: true,
-      )
-      ..addFlag(
-        'sign',
-        help:
-            'Code sign the .app and .dmg files. Set to --no-sign to skip signing for test builds.',
-        defaultsTo: true,
-      )
-      ..addFlag(
-        'notarization',
-        help:
-            'Submit for notarization and staple. Set to --no-notarization to skip notarization for test builds. '
-            'This flag will be ignored if the `sign` flag is set to `--no-sign`.',
-        defaultsTo: true,
-      )
-      ..addFlag(
-        'verbose',
-        abbr: 'v',
-        negatable: false,
-        help: 'Show verbose logs',
-        defaultsTo: false,
-      )
-      ..addFlag(
-        'help',
-        abbr: 'h',
-        negatable: false,
-        help: 'Show helps',
-        defaultsTo: false,
-      );
+    final parser = createDmgArgParser();
 
     final param = parser.parse(args);
 
@@ -87,24 +21,26 @@ Future<int> execute(List<String> args) async {
       return 0;
     }
 
+    final config = resolveDmgConfig(param);
+
     final releasePath = joinPaths([
       '.',
       'build',
       'macos',
       'Build',
       'Products',
-      if (param['flavor'] != null) 'Release-${param['flavor']}' else 'Release',
+      if (config.flavor != null) 'Release-${config.flavor}' else 'Release',
     ]);
 
-    final settings = param['settings'] as String?;
-    final licensePath = param['license-path'] as String?;
-    var signCertificate = param['sign-certificate'] as String?;
-    var notaryProfile = param['notary-profile'] as String;
-    final runBuild = param['build'] as bool;
-    final cleanBuild = param['clean-build'] as bool;
-    final runSign = param['sign'] as bool;
-    final runNotarization = param['notarization'] as bool;
-    final isVerbose = param['verbose'] as bool;
+    final settings = config.settings;
+    final licensePath = config.licensePath;
+    var signCertificate = config.signCertificate;
+    var notaryProfile = config.notaryProfile;
+    final runBuild = config.build;
+    final cleanBuild = config.cleanBuild;
+    final runSign = config.sign;
+    final runNotarization = config.notarization;
+    final isVerbose = config.verbose;
 
     // Validate inputs
     if (licensePath != null && !File(licensePath).existsSync()) {
@@ -151,8 +87,7 @@ Future<int> execute(List<String> args) async {
       }
 
       log.info('Flutter release...');
-      if (!await runFlutterRelease(
-          isVerbose, releasePath, param['flavor'] as String?)) {
+      if (!await runFlutterRelease(isVerbose, releasePath, config.flavor)) {
         log.warning(
             'Error: `flutter build macos --release` failed. Please check your project settings and logs for further details.');
         log.warning('Exit');
