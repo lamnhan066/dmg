@@ -10,6 +10,9 @@ import 'package:dmg/src/pubspec_config.dart';
 import 'package:dmg/src/staple.dart';
 import 'package:dmg/src/utils.dart';
 
+/// Runs the DMG build workflow and returns an exit code.
+///
+/// [args] are the command-line arguments passed to the `dmg` executable.
 Future<int> execute(List<String> args) async {
   try {
     final parser = createDmgArgParser();

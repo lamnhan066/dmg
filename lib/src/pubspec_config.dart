@@ -3,18 +3,50 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:yaml/yaml.dart';
 
+/// Resolved DMG configuration loaded from `pubspec.yaml` and command-line flags.
 class DmgConfig {
+  /// The Flutter flavor to build, when provided.
   final String? flavor;
+
+  /// The signing certificate to use for code signing.
   final String? signCertificate;
+
+  /// The path to a custom `dmgbuild` settings file.
   final String? settings;
+
+  /// The path to a license file used by `dmgbuild`.
   final String? licensePath;
+
+  /// The notarization profile name.
   final String notaryProfile;
+
+  /// Whether to run the Flutter macOS build step.
   final bool build;
+
+  /// Whether to clean the macOS build directory before building.
   final bool cleanBuild;
+
+  /// Whether to code sign the app and DMG.
   final bool sign;
+
+  /// Whether to notarize and staple the DMG.
   final bool notarization;
+
+  /// Whether verbose logging is enabled.
   final bool verbose;
 
+  /// Creates a resolved DMG configuration.
+  ///
+  /// [flavor] is the selected Flutter flavor, if any.
+  /// [signCertificate] is the signing certificate to use.
+  /// [settings] is a custom `dmgbuild` settings file, if provided.
+  /// [licensePath] is the optional license file path.
+  /// [notaryProfile] is the notarization profile name.
+  /// [build] controls whether the Flutter build step runs.
+  /// [cleanBuild] controls whether the build output is cleaned first.
+  /// [sign] controls whether code signing runs.
+  /// [notarization] controls whether notarization runs.
+  /// [verbose] controls whether verbose logging is enabled.
   const DmgConfig({
     required this.flavor,
     required this.signCertificate,
@@ -29,6 +61,7 @@ class DmgConfig {
   });
 }
 
+/// Creates the argument parser used by the `dmg` command.
 ArgParser createDmgArgParser() {
   return ArgParser()
     ..addOption(
@@ -98,6 +131,9 @@ ArgParser createDmgArgParser() {
     );
 }
 
+/// Resolves DMG configuration from parsed arguments and `pubspec.yaml`.
+///
+/// [results] must come from [createDmgArgParser].
 DmgConfig resolveDmgConfig(ArgResults results) {
   final baseConfig = _loadDmgSection('dmg');
   final cliFlavor = _argString(results, 'flavor');
