@@ -1,3 +1,9 @@
+## 0.1.10
+
+* Add support for `dmg` config in `pubspec.yaml`.
+* Add support for flavor-specific config blocks like `dmg_dev` and `dmg_prod`.
+* Update README with pubspec-based configuration examples.
+
 ## 0.1.9
 
 * Revert "fix: use absolute path for license file in dmgbuild settings" because the issue is not completely fixed.
